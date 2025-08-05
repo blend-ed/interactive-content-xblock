@@ -1,0 +1,115 @@
+{% load i18n %}
+<div class="interactive-js-block" data-block-id="{{ block_id }}">
+    <div class="interactive-js-header">
+        <h3>{{ display_name }}</h3>
+        {% if enable_debug_mode %}
+        <div class="debug-info">
+            <small>Interactions: {{ interaction_count }} | Last: {{ last_interaction_time|default:"None" }}</small>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="interactive-js-content">
+        <!-- Author's HTML content -->
+        <div class="author-html">
+            {{ html_content|safe }}
+        </div>
+    </div>
+
+    <!-- Debug panel (only shown in debug mode) -->
+    {% if enable_debug_mode %}
+    <div class="debug-panel">
+        <h4>Debug Information</h4>
+        <div class="debug-section">
+            <strong>Current Response:</strong>
+            <pre id="current-response">{{ learner_response|default:"{}" }}</pre>
+        </div>
+        <div class="debug-section">
+            <strong>Interaction Count:</strong> <span id="interaction-count">{{ interaction_count }}</span>
+        </div>
+        <div class="debug-section">
+            <strong>Last Interaction:</strong> <span id="last-interaction">{{ last_interaction_time|default:"None" }}</span>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- XBlockInterface for JavaScript communication -->
+    <script type="text/javascript">
+        (function() {
+            // Create the XBlockInterface for safe JS → XBlock communication
+            window.XBlockInterface = {
+                postMessage: function({ type, payload }) {
+                    if (type === 'interaction') {
+                        // Send data to backend
+                        var handlerUrl = runtime.handlerUrl(element, 'save_interaction');
+                        $.ajax({
+                            type: "POST",
+                            url: handlerUrl,
+                            data: JSON.stringify(payload),
+                            contentType: "application/json",
+                            success: function(response) {
+                                if (response.status === 'ok') {
+                                    console.log('Interaction saved:', response.message);
+                                    // Update debug info if available
+                                    if (window.updateDebugInfo) {
+                                        window.updateDebugInfo(response);
+                                    }
+                                } else {
+                                    console.error('Failed to save interaction:', response.message);
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                console.error('Error saving interaction:', error);
+                            }
+                        });
+                    }
+                }
+            };
+
+            // Make submitInteraction function available globally
+            window.submitInteraction = function(data) {
+                if (!data || typeof data !== 'object') {
+                    console.error('submitInteraction: data must be a JSON object');
+                    return;
+                }
+                
+                // Add timestamp if not provided
+                if (!data.timestamp) {
+                    data.timestamp = new Date().toISOString();
+                }
+                
+                // Send via XBlockInterface
+                window.XBlockInterface.postMessage({
+                    type: 'interaction',
+                    payload: data
+                });
+            };
+
+            // Debug helper function
+            window.updateDebugInfo = function(response) {
+                var countElement = document.getElementById('interaction-count');
+                if (countElement) {
+                    countElement.textContent = response.interaction_count;
+                }
+                
+                var lastElement = document.getElementById('last-interaction');
+                if (lastElement) {
+                    lastElement.textContent = new Date().toISOString();
+                }
+            };
+
+            // Log when interface is ready
+            console.log('InteractiveJSBlock: XBlockInterface ready');
+        })();
+    </script>
+
+    <!-- Author's CSS content -->
+    <style>
+        {{ css_content|safe }}
+    </style>
+
+    <!-- Author's JavaScript content -->
+    <script type="text/javascript">
+        {{ js_content|safe }}
+    </script>
+</div> 
