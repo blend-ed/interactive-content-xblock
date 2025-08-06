@@ -54,8 +54,8 @@ class InteractiveJSBlockViewMixin(StudioEditableXBlockMixin):
         fragment = self.build_fragment(
             template=template,
             context=context,
-            css=['css/interactive_js_block.css'],
-            js=['js/src/interactive_js_block.js'],
+            css=['static/css/interactive_js_block.css'],
+            js=['static/js/src/interactive_js_block.js'],
             js_init=self.static_js_init,
         )
 
@@ -91,8 +91,8 @@ class InteractiveJSBlockViewMixin(StudioEditableXBlockMixin):
         fragment = self.build_fragment(
             template=template,
             context=context,
-            css=['css/studio_view.css'],
-            js=['js/src/studio_view.js'],
+            css=['static/css/studio_view.css'],
+            js=['static/js/src/studio_view.js'],
             js_init='StudioView',
         )
 
