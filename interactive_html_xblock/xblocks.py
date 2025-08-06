@@ -35,8 +35,14 @@ class InteractiveJSBlock(
         """
         super().__init__(*args, **kwargs)
         # Ensure fields are properly initialized
-        if hasattr(self, 'ensure_field_initialization'):
-            self.ensure_field_initialization()
+        try:
+            if hasattr(self, 'ensure_field_initialization'):
+                self.ensure_field_initialization()
+        except Exception as e:
+            # Log the error but don't fail initialization
+            import logging
+            log = logging.getLogger(__name__)
+            log.warning("Error during field initialization: %s", str(e))
 
     @staticmethod
     def workbench_scenarios():

@@ -46,6 +46,12 @@ class InteractiveJSBlockViewMixin(StudioEditableXBlockMixin):
         """
         return self.editable_fields
 
+    def get_editable_fields_names(self):
+        """
+        Return the list of editable field names for StudioEditableXBlockMixin
+        """
+        return self.editable_fields
+
     def student_view(self, context=None):
         """
         Create the student view of the InteractiveJSBlock
@@ -259,8 +265,12 @@ class InteractiveJSBlockViewMixin(StudioEditableXBlockMixin):
         """
         Validate field data in studio
         """
+        # The 'data' parameter is actually the XBlock instance (self)
+        # We need to validate the current field values
+        
         # Validate HTML content
-        if 'html_content' in data and not data['html_content'].strip():
+        html_content = getattr(data, 'html_content', '')
+        if not html_content or not html_content.strip():
             validation.add(
                 ValidationMessage(
                     ValidationMessage.ERROR,
@@ -269,39 +279,42 @@ class InteractiveJSBlockViewMixin(StudioEditableXBlockMixin):
             )
         
         # Validate weight
-        if 'weight' in data:
-            try:
-                weight = int(data['weight'])
-                if weight < 0:
-                    validation.add(
-                        ValidationMessage(
-                            ValidationMessage.ERROR,
-                            'Weight must be a non-negative integer'
-                        )
-                    )
-            except ValueError:
+        weight = getattr(data, 'weight', 1)
+        try:
+            weight_int = int(weight)
+            if weight_int < 0:
                 validation.add(
                     ValidationMessage(
                         ValidationMessage.ERROR,
-                        'Weight must be a valid integer'
+                        'Weight must be a non-negative integer'
                     )
                 )
+        except (ValueError, TypeError):
+            validation.add(
+                ValidationMessage(
+                    ValidationMessage.ERROR,
+                    'Weight must be a valid integer'
+                )
+            )
         
         # Validate external URLs
-        if 'allowed_external_urls' in data:
-            try:
-                urls = json.loads(data['allowed_external_urls'])
-                if not isinstance(urls, list):
-                    validation.add(
-                        ValidationMessage(
-                            ValidationMessage.ERROR,
-                            'Allowed external URLs must be a JSON array'
-                        )
-                    )
-            except json.JSONDecodeError:
+        allowed_urls = getattr(data, 'allowed_external_urls', [])
+        if allowed_urls is not None:
+            if not isinstance(allowed_urls, list):
                 validation.add(
                     ValidationMessage(
                         ValidationMessage.ERROR,
-                        'Allowed external URLs must be valid JSON'
+                        'Allowed external URLs must be a list'
                     )
-                ) 
+                )
+            else:
+                # Validate each URL
+                for url in allowed_urls:
+                    if not isinstance(url, str) or not url.strip():
+                        validation.add(
+                            ValidationMessage(
+                                ValidationMessage.ERROR,
+                                'All URLs must be non-empty strings'
+                            )
+                        )
+                        break 

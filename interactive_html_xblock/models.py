@@ -99,25 +99,38 @@ class InteractiveJSBlockModelMixin(object):
         """
         Ensure allowed_external_urls is always a list
         """
-        urls = getattr(self, 'allowed_external_urls', None)
-        if urls is None:
+        try:
+            urls = getattr(self, 'allowed_external_urls', None)
+            if urls is None:
+                return []
+            if not isinstance(urls, list):
+                # Try to convert to list if it's not already
+                if hasattr(urls, '__iter__') and not isinstance(urls, str):
+                    return list(urls)
+                return []
+            return urls
+        except Exception:
+            # If anything goes wrong, return empty list
             return []
-        if not isinstance(urls, list):
-            return []
-        return urls
 
     def ensure_field_initialization(self):
         """
         Ensure all fields are properly initialized
         """
-        if not hasattr(self, 'allowed_external_urls') or self.allowed_external_urls is None:
-            self.allowed_external_urls = []
-        if not hasattr(self, 'learner_response') or self.learner_response is None:
-            self.learner_response = {}
-        if not hasattr(self, 'interaction_count') or self.interaction_count is None:
-            self.interaction_count = 0
-        if not hasattr(self, 'last_interaction_time') or self.last_interaction_time is None:
-            self.last_interaction_time = ''
+        try:
+            if not hasattr(self, 'allowed_external_urls') or self.allowed_external_urls is None:
+                self.allowed_external_urls = []
+            if not hasattr(self, 'learner_response') or self.learner_response is None:
+                self.learner_response = {}
+            if not hasattr(self, 'interaction_count') or self.interaction_count is None:
+                self.interaction_count = 0
+            if not hasattr(self, 'last_interaction_time') or self.last_interaction_time is None:
+                self.last_interaction_time = ''
+        except Exception as e:
+            # Log the error but don't fail initialization
+            import logging
+            log = logging.getLogger(__name__)
+            log.warning("Error during field initialization: %s", str(e))
 
     def max_score(self):
         """
