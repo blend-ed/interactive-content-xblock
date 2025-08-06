@@ -22,13 +22,10 @@ Installation
 System Administrator
 ~~~~~~~~~~~~~~~~~~~
 
-To install the XBlock on your platform, add the following to your ``requirements.txt`` file:
+To install the XBlock on your platform, add the following to your ``OPENEDX_EXTRA_PIP_REQUIREMENTS``:
 
-    interactive-html-xblock
+  git+https://github.com/openedx/interactive-html-xblock.git@main
 
-You'll also need to add this to your ``INSTALLED_APPS``:
-
-    interactive_html_xblock
 
 Course Staff
 ~~~~~~~~~~~~
@@ -49,10 +46,9 @@ Studio View (Authoring)
 
 1. Add the InteractiveJSBlock to your course
 2. Click "Edit" to open the studio editor
-3. Use the tabbed interface to define:
+3. Update the following fields:
    - **HTML Content**: The structure and content of your interactive element
    - **CSS Styles**: Styling for your content (scoped to the block)
-   - **JavaScript**: Interactive functionality
    - **Settings**: Configuration options
 
 4. Use the ``submitInteraction(data)`` function in your JavaScript to capture learner interactions:
@@ -100,17 +96,6 @@ Example:
       correct: true,
       timeSpent: 45
     });
-
-Development
------------
-
-To run the XBlock in development mode:
-
-.. code-block:: bash
-
-    cd interactive-html-xblock
-    make requirements
-    make test
 
 Development with Tutor
 ~~~~~~~~~~~~~~~~~~~~~
@@ -198,8 +183,3 @@ Example Quiz Implementation
       });
     }
     var startTime = Date.now();
-
-License
--------
-
-This project is licensed under the MIT License - see the LICENSE file for details.
