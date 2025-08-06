@@ -112,6 +112,37 @@ To run the XBlock in development mode:
     make requirements
     make test
 
+Development with Tutor
+~~~~~~~~~~~~~~~~~~~~~
+
+To develop this xblock with Tutor:
+
+1. Clone the xblock repository
+2. Navigate to the folder and install in development mode:
+
+   .. code-block:: bash
+
+       cd interactive-html-xblock
+       pip install -e .
+
+3. Add this folder to Tutor mounts:
+
+   .. code-block:: bash
+
+       tutor mounts add /path/to/interactive-html-xblock
+
+4. Build the development image:
+
+   .. code-block:: bash
+
+       tutor images build openedx-dev
+
+5. Start the development environment:
+
+   .. code-block:: bash
+
+       tutor dev start -d
+
 Workbench Scenarios
 ------------------
 
