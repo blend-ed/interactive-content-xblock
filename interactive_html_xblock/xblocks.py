@@ -2,15 +2,23 @@
 This is the core logic for the InteractiveJSBlock
 """
 from xblock.core import XBlock
+try:
+    from xblock.completable import CompletableXBlockMixin
+except ImportError:
+    # Fallback for older XBlock versions
+    class CompletableXBlockMixin:
+        pass
 
 from .models import InteractiveJSBlockModelMixin
 from .views import InteractiveJSBlockViewMixin
 
 
-@XBlock.needs('i18n')
+@XBlock.wants('user')
+@XBlock.wants('i18n')
 class InteractiveJSBlock(
         InteractiveJSBlockModelMixin,
         InteractiveJSBlockViewMixin,
+        CompletableXBlockMixin,
         XBlock,
 ):
     """

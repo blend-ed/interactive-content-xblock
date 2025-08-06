@@ -3,8 +3,10 @@ Handle view logic for the InteractiveJSBlock
 """
 import json
 import datetime
+import logging
 from xblock.core import XBlock
 from xblock.validation import ValidationMessage
+from xblock.exceptions import JsonHandlerError
 try:
     from xblock.utils.resources import ResourceLoader
     from xblock.utils.studio_editable import StudioEditableXBlockMixin
@@ -13,6 +15,9 @@ except ModuleNotFoundError:  # pragma: no cover
     from xblockutils.studio_editable import StudioEditableXBlockMixin
 
 from .models import InteractiveJSBlockModelMixin
+
+# Initialize logger
+log = logging.getLogger(__name__)
 
 
 class InteractiveJSBlockViewMixin(StudioEditableXBlockMixin):
@@ -44,11 +49,15 @@ class InteractiveJSBlockViewMixin(StudioEditableXBlockMixin):
         })
 
         # Load the template
-        template = self.loader.render_django_template(
-            'templates/student_view.html',
-            context=context,
-            i18n_service=self._i18n_service(),
-        )
+        try:
+            template = self.loader.render_django_template(
+                'templates/student_view.html',
+                context=context,
+                i18n_service=self._i18n_service(),
+            )
+        except Exception as e:
+            log.error("Error rendering student view template: %s", str(e))
+            template = "<div class='xblock-error'>Error loading content</div>"
 
         # Create fragment
         fragment = self.build_fragment(
@@ -81,11 +90,15 @@ class InteractiveJSBlockViewMixin(StudioEditableXBlockMixin):
         })
 
         # Load the studio template
-        template = self.loader.render_django_template(
-            'templates/studio_view.html',
-            context=context,
-            i18n_service=self._i18n_service(),
-        )
+        try:
+            template = self.loader.render_django_template(
+                'templates/studio_view.html',
+                context=context,
+                i18n_service=self._i18n_service(),
+            )
+        except Exception as e:
+            log.error("Error rendering studio view template: %s", str(e))
+            template = "<div class='xblock-error'>Error loading studio view</div>"
 
         # Create fragment
         fragment = self.build_fragment(
@@ -111,16 +124,22 @@ class InteractiveJSBlockViewMixin(StudioEditableXBlockMixin):
         
         # Add CSS
         for item in css:
-            if item.startswith('/'):
-                fragment.add_css_url(item)
-            else:
-                data = self.loader.load_unicode(item)
-                fragment.add_css(data)
+            try:
+                if item.startswith('/'):
+                    fragment.add_css_url(item)
+                else:
+                    data = self.loader.load_unicode(item)
+                    fragment.add_css(data)
+            except Exception as e:
+                log.error("Error loading CSS file %s: %s", item, str(e))
         
         # Add JavaScript
         for item in js:
-            url = self.runtime.local_resource_url(self, item)
-            fragment.add_javascript_url(url)
+            try:
+                url = self.runtime.local_resource_url(self, item)
+                fragment.add_javascript_url(url)
+            except Exception as e:
+                log.error("Error loading JavaScript file %s: %s", item, str(e))
         
         if js_init:
             fragment.initialize_js(js_init)
@@ -139,7 +158,13 @@ class InteractiveJSBlockViewMixin(StudioEditableXBlockMixin):
         """
         Save learner interaction data from JavaScript
         """
+        # Validate that data is provided
+        if not data:
+            log.warning("save_interaction called with no data provided")
+            return {'status': 'error', 'message': 'No data provided'}
+            
         if not isinstance(data, dict):
+            log.warning("save_interaction called with invalid data type: %s", type(data))
             return {'status': 'error', 'message': 'Data must be a JSON object'}
         
         try:
@@ -152,15 +177,18 @@ class InteractiveJSBlockViewMixin(StudioEditableXBlockMixin):
             if self.auto_grade_enabled:
                 self._handle_auto_grading(data)
             
+            log.info("Interaction saved successfully for user %s", getattr(self.runtime, 'user_id', 'unknown'))
+            
             return {
                 'status': 'ok',
                 'message': 'Interaction saved successfully',
                 'interaction_count': self.interaction_count
             }
         except Exception as e:
+            log.error("Error saving interaction data: %s", str(e))
             return {
                 'status': 'error',
-                'message': f'Failed to save interaction: {str(e)}'
+                'message': 'Failed to save interaction'
             }
 
     def _handle_auto_grading(self, data):
@@ -168,16 +196,28 @@ class InteractiveJSBlockViewMixin(StudioEditableXBlockMixin):
         Handle automatic grading based on interaction data
         """
         # Check if the data contains a score or grade
-        if 'score' in data:
-            score = float(data['score'])
-            self.set_score(score)
-        elif 'grade' in data:
-            grade = float(data['grade'])
-            self.set_score(grade)
-        elif 'correct' in data:
-            # Boolean grading
-            score = self.max_score() if data['correct'] else 0.0
-            self.set_score(score)
+        try:
+            if 'score' in data:
+                score = float(data['score'])
+                if score < 0 or score > self.max_score():
+                    log.warning("Invalid score value: %s (max: %s)", score, self.max_score())
+                    return
+                self.set_score(score)
+            elif 'grade' in data:
+                grade = float(data['grade'])
+                if grade < 0 or grade > self.max_score():
+                    log.warning("Invalid grade value: %s (max: %s)", grade, self.max_score())
+                    return
+                self.set_score(grade)
+            elif 'correct' in data:
+                # Boolean grading
+                if not isinstance(data['correct'], bool):
+                    log.warning("'correct' field must be boolean, got: %s", type(data['correct']))
+                    return
+                score = self.max_score() if data['correct'] else 0.0
+                self.set_score(score)
+        except (ValueError, TypeError) as e:
+            log.error("Error processing grading data: %s", str(e))
 
     def validate_field_data(self, validation, data):
         """
