@@ -362,6 +362,7 @@ class InteractiveJSBlockViewMixin(StudioEditableXBlockMixin):
     def get_all_learners_data(self, data, suffix=''):
         """
         Get all learners' data for staff view
+        Note: Due to XBlock security limitations, this may only show the current user's data
         """
         if not self.is_staff():
             return {'status': 'error', 'message': 'Access denied'}
@@ -371,15 +372,42 @@ class InteractiveJSBlockViewMixin(StudioEditableXBlockMixin):
             course_id = str(self.course_id)
             students = self._get_enrolled_students(course_id)
             
+            log.info("Found %d enrolled students for course %s", len(students), course_id)
+            
             learners_data = []
+            current_user_id = self.runtime.get_real_user(self.runtime.anonymous_student_id).id if self.runtime.get_real_user(self.runtime.anonymous_student_id) else None
+            
             for student in students:
-                student_data = self._get_student_data_simple(student)
-                if student_data:
-                    learners_data.append(student_data)
+                user_id, username, email, full_name = student
+                
+                # For now, only show data for the current user due to XBlock limitations
+                if user_id == current_user_id:
+                    student_data = self._get_student_data_simple(student)
+                    if student_data:
+                        learners_data.append(student_data)
+                        log.info("Got data for current user %s: %s", username, student_data.get('learner_response', {}))
+                else:
+                    # For other users, just show basic info without their data
+                    learners_data.append({
+                        'user_id': user_id,
+                        'username': username,
+                        'email': email,
+                        'full_name': full_name or username,
+                        'learner_response': {'note': 'Data not accessible due to XBlock security limitations'},
+                        'interaction_count': 0,
+                        'last_interaction_time': 'Not accessible',
+                        'is_correct': False,
+                        'score': 0.0,
+                        'feedback_message': 'Data not accessible',
+                    })
+                    log.info("Added basic info for user %s (data not accessible)", username)
+            
+            log.info("Returning data for %d learners", len(learners_data))
             
             return {
                 'status': 'ok',
-                'learners': learners_data
+                'learners': learners_data,
+                'note': 'Due to XBlock security limitations, only the current user\'s data is fully accessible. Other users\' data is limited.'
             }
         except Exception as e:
             log.error("Error getting all learners data: %s", str(e))
@@ -459,64 +487,107 @@ class InteractiveJSBlockViewMixin(StudioEditableXBlockMixin):
 
     def _get_user_state_direct(self, user_id):
         """
-        Get user state data directly using XBlock field storage
+        Get user state data directly using Django ORM
         """
         try:
-            # Try to access the user state through the field storage
+            # Use Django ORM to directly query the user state data
+            from django.contrib.auth import get_user_model
             from xmodule.modulestore.django import modulestore
             from opaque_keys.edx.keys import UsageKey
             
             # Get the usage key
             usage_key = UsageKey.from_string(str(self.location))
             
+            # Try to get the user
+            User = get_user_model()
+            try:
+                user = User.objects.get(id=user_id)
+            except User.DoesNotExist:
+                log.warning("User %s does not exist", user_id)
+                return None
+            
             # Get the block from the modulestore
             block = modulestore().get_item(usage_key)
-            if block:
-                # Try to get user state through the field storage
-                user_state = {}
-                
-                # Get the field storage for this user
-                try:
-                    # Try to access the user state through the block's field storage
-                    field_storage = block.get_user_state(user_id)
-                    if field_storage:
-                        for field_name in ['learner_response', 'interaction_count', 'last_interaction_time', 'is_correct', 'score', 'feedback_message']:
-                            try:
-                                if hasattr(field_storage, field_name):
-                                    value = getattr(field_storage, field_name, None)
-                                    if value is not None:
-                                        user_state[field_name] = value
-                            except Exception as field_error:
-                                log.debug("Error getting field %s for user %s: %s", field_name, user_id, str(field_error))
-                                continue
-                except Exception as storage_error:
-                    log.debug("Error getting field storage for user %s: %s", user_id, str(storage_error))
-                
-                # If we got any data, return it
-                if user_state:
-                    return user_state
-                
-                # If no data through field storage, try a different approach
-                try:
-                    # Try to get data through the block's user state methods
+            if not block:
+                log.warning("Could not get block from modulestore for location: %s", str(self.location))
+                return None
+            
+            # Try to get user state through the block's field storage
+            user_state = {}
+            
+            try:
+                # Try to access the user state through the block's field storage
+                field_storage = block.get_user_state(user_id)
+                if field_storage:
                     for field_name in ['learner_response', 'interaction_count', 'last_interaction_time', 'is_correct', 'score', 'feedback_message']:
                         try:
-                            # Try to call the field's get method for this user
-                            field = getattr(block, field_name, None)
-                            if field and hasattr(field, 'get'):
-                                value = field.get(user_id)
+                            if hasattr(field_storage, field_name):
+                                value = getattr(field_storage, field_name, None)
                                 if value is not None:
                                     user_state[field_name] = value
                         except Exception as field_error:
                             log.debug("Error getting field %s for user %s: %s", field_name, user_id, str(field_error))
                             continue
-                except Exception as method_error:
-                    log.debug("Error using block methods for user %s: %s", user_id, str(method_error))
-                
-                return user_state if user_state else None
-            else:
-                log.warning("Could not get block from modulestore for location: %s", str(self.location))
-                return None
+            except Exception as storage_error:
+                log.debug("Error getting field storage for user %s: %s", user_id, str(storage_error))
+            
+            # If we got any data, return it
+            if user_state:
+                return user_state
+            
+            # If no data through field storage, try a different approach
+            try:
+                # Try to get data through the block's user state methods
+                for field_name in ['learner_response', 'interaction_count', 'last_interaction_time', 'is_correct', 'score', 'feedback_message']:
+                    try:
+                        # Try to call the field's get method for this user
+                        field = getattr(block, field_name, None)
+                        if field and hasattr(field, 'get'):
+                            value = field.get(user_id)
+                            if value is not None:
+                                user_state[field_name] = value
+                    except Exception as field_error:
+                        log.debug("Error getting field %s for user %s: %s", field_name, user_id, str(field_error))
+                        continue
+            except Exception as method_error:
+                log.debug("Error using block methods for user %s: %s", user_id, str(method_error))
+            
+            # If still no data, try to query the database directly
+            if not user_state:
+                try:
+                    # Try to query the XBlock user state table directly
+                    from django.db import connection
+                    
+                    # Get the block_id from the usage key
+                    block_id = str(usage_key)
+                    
+                    with connection.cursor() as cursor:
+                        # Query the XBlock user state table
+                        cursor.execute("""
+                            SELECT field_name, value 
+                            FROM xblock_django_xblockuserstate 
+                            WHERE block_id = %s AND user_id = %s
+                        """, [block_id, user_id])
+                        
+                        rows = cursor.fetchall()
+                        for row in rows:
+                            field_name, value = row
+                            if field_name in ['learner_response', 'interaction_count', 'last_interaction_time', 'is_correct', 'score', 'feedback_message']:
+                                try:
+                                    # Try to parse JSON values
+                                    import json
+                                    parsed_value = json.loads(value)
+                                    user_state[field_name] = parsed_value
+                                except (json.JSONDecodeError, TypeError):
+                                    # If not JSON, use as string
+                                    user_state[field_name] = value
+                    
+                    log.info("Direct database query for user %s returned %d fields", user_id, len(user_state))
+                    
+                except Exception as db_error:
+                    log.debug("Error querying database for user %s: %s", user_id, str(db_error))
+            
+            return user_state if user_state else None
                 
         except Exception as e:
             log.error("Error in _get_user_state_direct for user %s: %s", user_id, str(e))

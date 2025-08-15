@@ -70,6 +70,11 @@ function InteractiveJSBlockView(runtime, element) {
                 if (response.status === 'ok') {
                     if (response.learners && response.learners.length > 0) {
                         displayLearnersTable(response.learners);
+                        
+                        // Show note about limitations if provided
+                        if (response.note) {
+                            showMessage(response.note, 'info');
+                        }
                     } else {
                         displayLearnersTable([]);
                     }
@@ -364,11 +369,18 @@ function InteractiveJSBlockView(runtime, element) {
     // Show message
     function showMessage(message, type) {
         var notification = document.createElement('div');
+        var backgroundColor = '#28a745'; // success
+        if (type === 'error') {
+            backgroundColor = '#dc3545';
+        } else if (type === 'info') {
+            backgroundColor = '#17a2b8';
+        }
+        
         notification.style.cssText = `
             position: fixed;
             top: 20px;
             right: 20px;
-            background: ${type === 'success' ? '#28a745' : '#dc3545'};
+            background: ${backgroundColor};
             color: white;
             padding: 12px 20px;
             border-radius: 4px;
@@ -376,6 +388,8 @@ function InteractiveJSBlockView(runtime, element) {
             font-weight: 500;
             z-index: 10000;
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            max-width: 400px;
+            word-wrap: break-word;
         `;
         notification.textContent = message;
         
@@ -385,7 +399,7 @@ function InteractiveJSBlockView(runtime, element) {
             if (notification.parentNode) {
                 notification.parentNode.removeChild(notification);
             }
-        }, 3000);
+        }, 8000); // Show info messages longer
     }
     
     // Initialize when DOM is ready
