@@ -45,7 +45,7 @@ For multiple fields:
 - **Score Display**: Current score is displayed
 - **Status Indicators**: Visual indicators for correct/incorrect responses
 
-### 3. Staff Visibility
+### 3. Staff Visibility and Submission History
 
 #### Student View for Staff
 - **Staff Panel**: Special panel visible only to staff users
@@ -57,6 +57,20 @@ For multiple fields:
 - **Statistics**: Summary statistics for each block
 - **Student Responses**: Detailed view of individual student responses
 - **Success Rates**: Calculate and display success rates
+
+#### Enhanced Submission History
+- **Learner Information**: Full name, username, and email address for each submission
+- **Detailed Responses**: Complete response data with expandable details
+- **Interaction Tracking**: Number of interactions per student
+- **Timestamps**: Precise submission times with date and time
+- **Sorting**: Submissions sorted by most recent first
+- **Export Functionality**: Download submission history as CSV
+
+#### CSV Export Features
+- **Complete Data**: All submission data including learner information
+- **Formatted Output**: Clean CSV format with headers
+- **Timestamped Files**: Automatic filename generation with timestamps
+- **Email Integration**: Clickable email addresses for easy communication
 
 ### 4. Configuration Options
 
@@ -129,6 +143,38 @@ OPEN_EDX_FILTERS_CONFIG = {
 }
 ```
 
+## Submission History Features
+
+### What's Included in Submission History
+- **Student Full Name**: Complete name of the learner
+- **Username**: System username with @ prefix
+- **Email Address**: Clickable email for easy communication
+- **Response Summary**: Quick view of the answer provided
+- **Full Response Data**: Expandable details showing complete interaction data
+- **Score**: Numerical score achieved
+- **Correctness**: Visual indicator (✓/✗) for correct/incorrect responses
+- **Interaction Count**: Number of times the student has interacted
+- **Submission Time**: Date and time of last submission
+
+### CSV Export Format
+The exported CSV includes the following columns:
+1. Student Name
+2. Username
+3. Email
+4. Answer
+5. Score
+6. Correct (Yes/No)
+7. Feedback Message
+8. Interaction Count
+9. Last Submission Time
+10. Full Response Data (JSON format)
+
+### Export Functionality
+- **One-Click Export**: Simple button click to download CSV
+- **Automatic Naming**: Files named with block ID and timestamp
+- **Complete Data**: All submission information included
+- **Formatted Output**: Clean, readable CSV format
+
 ## Technical Implementation
 
 ### Data Storage
@@ -147,6 +193,11 @@ OPEN_EDX_FILTERS_CONFIG = {
 - **Input Validation**: JSON validation for correct answers
 - **Access Control**: Staff-only access to instructor views
 - **Data Sanitization**: Proper data sanitization and validation
+
+### Database Integration
+- **User Information**: Integration with Django User model
+- **Enrollment Data**: Access to course enrollment information
+- **Email Retrieval**: Secure access to user email addresses
 
 ## Migration from Previous Version
 
@@ -168,6 +219,10 @@ The enhanced features are backward compatible. Existing blocks will continue to 
    - Ensure the feature flag is enabled
    - Check that the filter is properly configured
 
+4. **Email Not Displaying**
+   - Verify user has email address in profile
+   - Check database permissions for user data access
+
 ### Debug Mode
 Enable debug mode in studio settings to see detailed information about:
 - Current response data
@@ -181,5 +236,8 @@ Planned features for future releases:
 - Advanced grading algorithms
 - Peer review integration
 - Analytics dashboard
-- Export functionality
+- Real-time notifications
 - Mobile optimization
+- Bulk email functionality
+- Advanced filtering and search
+- Performance analytics

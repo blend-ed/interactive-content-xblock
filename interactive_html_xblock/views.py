@@ -76,47 +76,57 @@ class InteractiveJSBlockViewMixin(StudioEditableXBlockMixin):
 
     def student_view(self, context=None):
         """
-        Create the student view of the InteractiveJSBlock
+        The primary view of the InteractiveJSBlock, shown to students
+        within the LMS.
         """
-        # Ensure all fields are properly initialized
-        self.ensure_field_initialization()
-        
-        context = context or {}
-        context = dict(context)
-        
-        # Prepare the context for rendering
+        if context is None:
+            context = {}
+
+        # Get user information
+        user = self.runtime.get_real_user(self.runtime.anonymous_student_id)
+        user_id = user.id if user else None
+        username = user.username if user else None
+        user_email = user.email if user else None
+        user_full_name = user.get_full_name() if user else None
+
+        # Prepare context
         context.update({
             'block_id': str(self.location),
-            'display_name': getattr(self, 'display_name', 'Interactive JS Block'),
-            'html_content': getattr(self, 'html_content', ''),
-            'css_content': getattr(self, 'css_content', ''),
-            'js_content': getattr(self, 'js_content', ''),
-            'allowed_external_urls': self.get_allowed_external_urls(),
-            'enable_debug_mode': getattr(self, 'enable_debug_mode', False),
-            'learner_response': getattr(self, 'learner_response', {}),
-            'interaction_count': getattr(self, 'interaction_count', 0),
-            'last_interaction_time': getattr(self, 'last_interaction_time', ''),
-            'is_correct': getattr(self, 'is_correct', False),
-            'score': getattr(self, 'score', 0.0),
-            'weight': getattr(self, 'weight', 1),
-            'feedback_message': getattr(self, 'feedback_message', ''),
-            'show_feedback_to_learners': getattr(self, 'show_feedback_to_learners', True),
-            'show_previous_response': getattr(self, 'show_previous_response', True),
+            'display_name': self.display_name,
+            'html_content': self.html_content,
+            'css_content': self.css_content,
+            'js_content': self.js_content,
+            'enable_debug_mode': self.enable_debug_mode,
+            'show_feedback_to_learners': self.show_feedback_to_learners,
+            'show_previous_response': self.show_previous_response,
+            'weight': self.weight,
+            
+            # Learner state
+            'learner_response': self.learner_response,
+            'interaction_count': self.interaction_count,
+            'last_interaction_time': self.last_interaction_time,
+            'is_correct': self.is_correct,
+            'score': self.score,
+            'feedback_message': self.feedback_message,
+            
+            # User information
+            'user_id': user_id,
+            'username': username,
+            'user_email': user_email,
+            'user_full_name': user_full_name,
+            
+            # Staff information
             'is_staff': self.is_staff(),
         })
 
-        # Load the template
-        try:
-            template = self.render_template('static/html/student_view.html', context)
-        except Exception as e:
-            log.error("Error rendering student view template: %s", str(e))
-            template = "<div class='xblock-error'>Error loading content</div>"
-
-        # Create fragment using h5pxblock pattern
+        # Render the template
+        template = self._render_template('static/html/student_view.html', context)
+        
+        # Create fragment
         frag = Fragment(template)
         frag.add_css(self.resource_string("static/css/interactive_js_block.css"))
         frag.add_javascript(self.resource_string("public/js/interactive_js_block.js"))
-        frag.initialize_js(self.static_js_init)
+        frag.initialize_js('InteractiveJSBlockView')
         
         return frag
 
@@ -172,6 +182,16 @@ class InteractiveJSBlockViewMixin(StudioEditableXBlockMixin):
 
         Returns:
             str: The rendered template
+        """
+        return self.loader.render_django_template(
+            template_path,
+            context,
+            i18n_service=self.runtime.service(self, 'i18n'),
+        )
+
+    def _render_template(self, template_path, context):
+        """
+        Helper to render a template with the given context.
         """
         return self.loader.render_django_template(
             template_path,
@@ -337,6 +357,343 @@ class InteractiveJSBlockViewMixin(StudioEditableXBlockMixin):
         except Exception as e:
             log.error("Error getting learner data: %s", str(e))
             return {'status': 'error', 'message': 'Failed to get learner data'}
+
+    @XBlock.json_handler
+    def get_all_learners_data(self, data, suffix=''):
+        """
+        Get all learners' data for staff view
+        """
+        if not self.is_staff():
+            return {'status': 'error', 'message': 'Access denied'}
+        
+        try:
+            # Get all enrolled students for this course
+            course_id = str(self.course_id)
+            students = self._get_enrolled_students(course_id)
+            
+            learners_data = []
+            for student in students:
+                student_data = self._get_student_data_simple(student)
+                if student_data:
+                    learners_data.append(student_data)
+            
+            return {
+                'status': 'ok',
+                'learners': learners_data
+            }
+        except Exception as e:
+            log.error("Error getting all learners data: %s", str(e))
+            return {'status': 'error', 'message': 'Failed to get learners data'}
+
+    def _get_enrolled_students(self, course_id):
+        """
+        Get all enrolled students for a course
+        """
+        try:
+            from openedx.core.djangoapps.enrollments.data import get_user_enrollments
+            enrollments = get_user_enrollments(course_id)
+            return [(enrollment.user_id, enrollment.user.username, enrollment.user.email, enrollment.user.get_full_name()) 
+                   for enrollment in enrollments]
+        except Exception as e:
+            log.error("Error getting enrolled students: %s", str(e))
+            return []
+
+    def _get_student_data_simple(self, student):
+        """
+        Get data for a specific student using a simpler approach
+        """
+        try:
+            user_id, username, email, full_name = student
+            
+            # Try to get the actual student data using a more direct approach
+            try:
+                # Use the XBlock's field storage to get user state data
+                student_data = self._get_user_state_direct(user_id)
+                
+                if student_data and student_data.get('learner_response'):
+                    return {
+                        'user_id': user_id,
+                        'username': username,
+                        'email': email,
+                        'full_name': full_name or username,
+                        'learner_response': student_data.get('learner_response', {}),
+                        'interaction_count': student_data.get('interaction_count', 0),
+                        'last_interaction_time': student_data.get('last_interaction_time', ''),
+                        'is_correct': student_data.get('is_correct', False),
+                        'score': student_data.get('score', 0.0),
+                        'feedback_message': student_data.get('feedback_message', ''),
+                    }
+                else:
+                    # Return basic info if no data found
+                    return {
+                        'user_id': user_id,
+                        'username': username,
+                        'email': email,
+                        'full_name': full_name or username,
+                        'learner_response': {},
+                        'interaction_count': 0,
+                        'last_interaction_time': 'No interactions yet',
+                        'is_correct': False,
+                        'score': 0.0,
+                        'feedback_message': 'No data available',
+                    }
+            except Exception as e:
+                log.error("Error getting user state for user %s: %s", user_id, str(e))
+                # Return basic info on error
+                return {
+                    'user_id': user_id,
+                    'username': username,
+                    'email': email,
+                    'full_name': full_name or username,
+                    'learner_response': {'error': 'Could not load data'},
+                    'interaction_count': 0,
+                    'last_interaction_time': 'Error loading data',
+                    'is_correct': False,
+                    'score': 0.0,
+                    'feedback_message': 'Error loading data',
+                }
+                
+        except Exception as e:
+            log.error("Error getting student data for user %s: %s", student[0], str(e))
+            return None
+
+    def _get_user_state_direct(self, user_id):
+        """
+        Get user state data directly using XBlock field storage
+        """
+        try:
+            # Try to access the user state through the field storage
+            from xmodule.modulestore.django import modulestore
+            from opaque_keys.edx.keys import UsageKey
+            
+            # Get the usage key
+            usage_key = UsageKey.from_string(str(self.location))
+            
+            # Get the block from the modulestore
+            block = modulestore().get_item(usage_key)
+            if block:
+                # Try to get user state through the field storage
+                user_state = {}
+                
+                # Get the field storage for this user
+                try:
+                    # Try to access the user state through the block's field storage
+                    field_storage = block.get_user_state(user_id)
+                    if field_storage:
+                        for field_name in ['learner_response', 'interaction_count', 'last_interaction_time', 'is_correct', 'score', 'feedback_message']:
+                            try:
+                                if hasattr(field_storage, field_name):
+                                    value = getattr(field_storage, field_name, None)
+                                    if value is not None:
+                                        user_state[field_name] = value
+                            except Exception as field_error:
+                                log.debug("Error getting field %s for user %s: %s", field_name, user_id, str(field_error))
+                                continue
+                except Exception as storage_error:
+                    log.debug("Error getting field storage for user %s: %s", user_id, str(storage_error))
+                
+                # If we got any data, return it
+                if user_state:
+                    return user_state
+                
+                # If no data through field storage, try a different approach
+                try:
+                    # Try to get data through the block's user state methods
+                    for field_name in ['learner_response', 'interaction_count', 'last_interaction_time', 'is_correct', 'score', 'feedback_message']:
+                        try:
+                            # Try to call the field's get method for this user
+                            field = getattr(block, field_name, None)
+                            if field and hasattr(field, 'get'):
+                                value = field.get(user_id)
+                                if value is not None:
+                                    user_state[field_name] = value
+                        except Exception as field_error:
+                            log.debug("Error getting field %s for user %s: %s", field_name, user_id, str(field_error))
+                            continue
+                except Exception as method_error:
+                    log.debug("Error using block methods for user %s: %s", user_id, str(method_error))
+                
+                return user_state if user_state else None
+            else:
+                log.warning("Could not get block from modulestore for location: %s", str(self.location))
+                return None
+                
+        except Exception as e:
+            log.error("Error in _get_user_state_direct for user %s: %s", user_id, str(e))
+            return None
+
+    def _load_student_xblock(self, user_id):
+        """
+        Load the XBlock instance for a specific student
+        """
+        # This method is no longer needed with the simplified approach
+        return None
+
+    @XBlock.handler
+    def export_learners_csv(self, request, suffix=""):
+        """
+        Export all learners' data as CSV for staff
+        """
+        if not self.is_staff():
+            return Response(
+                json.dumps({"error": "Access denied"}),
+                content_type="application/json",
+                charset="utf8"
+            )
+        
+        try:
+            import csv
+            import io
+            from datetime import datetime
+            
+            # Get all learners data
+            course_id = str(self.course_id)
+            students = self._get_enrolled_students(course_id)
+            
+            # Create CSV data
+            output = io.StringIO()
+            writer = csv.writer(output)
+            
+            # Write header
+            writer.writerow([
+                'Student Name',
+                'Username', 
+                'Email',
+                'Answer',
+                'Score',
+                'Correct',
+                'Feedback Message',
+                'Interaction Count',
+                'Last Submission Time',
+                'Full Response Data'
+            ])
+            
+            # Write data rows
+            for student in students:
+                student_data = self._get_student_data_simple(student)
+                if student_data:
+                    answer = student_data['learner_response'].get('answer', '') if student_data['learner_response'] else ''
+                    writer.writerow([
+                        student_data['full_name'],
+                        student_data['username'],
+                        student_data['email'],
+                        answer,
+                        student_data['score'],
+                        'Yes' if student_data['is_correct'] else 'No',
+                        student_data['feedback_message'],
+                        student_data['interaction_count'],
+                        student_data['last_interaction_time'],
+                        json.dumps(student_data['learner_response']) if student_data['learner_response'] else ''
+                    ])
+            
+            # Prepare response
+            csv_data = output.getvalue()
+            output.close()
+            
+            # Create filename with timestamp
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"interactive_js_learners_{self.location.block_id}_{timestamp}.csv"
+            
+            response = Response(
+                csv_data,
+                content_type="text/csv",
+                charset="utf8"
+            )
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            
+            return response
+            
+        except Exception as e:
+            log.error("Error exporting learners CSV: %s", str(e))
+            return Response(
+                json.dumps({"error": "Failed to export learners data"}),
+                content_type="application/json",
+                charset="utf8"
+            )
+
+    @XBlock.handler
+    def export_submissions(self, request, suffix=""):
+        """
+        Export submission history as CSV for instructors
+        """
+        if not self.is_staff():
+            return Response(
+                json.dumps({"error": "Access denied"}),
+                content_type="application/json",
+                charset="utf8"
+            )
+        
+        try:
+            import csv
+            import io
+            from datetime import datetime
+            
+            # Create CSV data
+            output = io.StringIO()
+            writer = csv.writer(output)
+            
+            # Write header
+            writer.writerow([
+                'Student Name',
+                'Username', 
+                'Email',
+                'Answer',
+                'Score',
+                'Correct',
+                'Feedback Message',
+                'Interaction Count',
+                'Last Submission Time',
+                'Full Response Data'
+            ])
+            
+            # Get current user info
+            try:
+                from django.contrib.auth import get_user_model
+                User = get_user_model()
+                user = User.objects.get(id=request.user.id)
+                full_name = user.get_full_name() or user.username
+            except:
+                full_name = "Unknown"
+            
+            # Write data row
+            answer = self.learner_response.get('answer', '') if self.learner_response else ''
+            writer.writerow([
+                full_name,
+                request.user.username,
+                request.user.email,
+                answer,
+                self.score,
+                'Yes' if self.is_correct else 'No',
+                self.feedback_message,
+                self.interaction_count,
+                self.last_interaction_time,
+                json.dumps(self.learner_response) if self.learner_response else ''
+            ])
+            
+            # Prepare response
+            csv_data = output.getvalue()
+            output.close()
+            
+            # Create filename with timestamp
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"interactive_js_submissions_{self.location.block_id}_{timestamp}.csv"
+            
+            response = Response(
+                csv_data,
+                content_type="text/csv",
+                charset="utf8"
+            )
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            
+            return response
+            
+        except Exception as e:
+            log.error("Error exporting submissions: %s", str(e))
+            return Response(
+                json.dumps({"error": "Failed to export submissions"}),
+                content_type="application/json",
+                charset="utf8"
+            )
 
     @XBlock.handler
     def studio_submit(self, request, suffix=""):
