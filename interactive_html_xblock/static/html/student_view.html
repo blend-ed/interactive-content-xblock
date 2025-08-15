@@ -44,135 +44,14 @@
     </div>
     {% endif %}
 
-    <!-- XBlock Interface for JavaScript Communication -->
-    <script type="text/javascript">
-        (function() {
-            'use strict';
-            
-            // Ensure we have the runtime
-            if (typeof runtime === 'undefined') {
-                console.error('InteractiveJSBlock: runtime not available');
-                return;
-            }
-            
-            // Create the XBlockInterface for safe JS → XBlock communication
-            window.XBlockInterface = {
-                postMessage: function({ type, payload }) {
-                    if (type === 'interaction') {
-                        this.saveInteraction(payload);
-                    } else if (type === 'error') {
-                        this.showError(payload);
-                    }
-                },
-                
-                saveInteraction: function(data) {
-                    var self = this;
-                    var handlerUrl = runtime.handlerUrl(element, 'save_interaction');
-                    
-                    // Show loading indicator
-                    this.showLoading(true);
-                    
-                    $.ajax({
-                        type: "POST",
-                        url: handlerUrl,
-                        data: JSON.stringify(data),
-                        contentType: "application/json",
-                        success: function(response) {
-                            self.showLoading(false);
-                            if (response.status === 'ok') {
-                                console.log('Interaction saved:', response.message);
-                                self.updateDebugInfo(response);
-                                self.showSuccess('Interaction saved successfully');
-                            } else {
-                                console.error('Failed to save interaction:', response.message);
-                                self.showError('Failed to save interaction: ' + response.message);
-                            }
-                        },
-                        error: function(xhr, status, error) {
-                            self.showLoading(false);
-                            console.error('AJAX error:', error);
-                            self.showError('Network error: ' + error);
-                        }
-                    });
-                },
-                
-                showError: function(message) {
-                    console.error('InteractiveJSBlock Error:', message);
-                    var errorDisplay = document.getElementById('error-display');
-                    var errorMessage = errorDisplay.querySelector('.error-message');
-                    errorMessage.textContent = message;
-                    errorDisplay.style.display = 'block';
-                    
-                    // Hide error after 5 seconds
-                    setTimeout(function() {
-                        errorDisplay.style.display = 'none';
-                    }, 5000);
-                },
-                
-                showLoading: function(show) {
-                    var loadingIndicator = document.getElementById('loading-indicator');
-                    loadingIndicator.style.display = show ? 'block' : 'none';
-                },
-                
-                showSuccess: function(message) {
-                    console.log('InteractiveJSBlock Success:', message);
-                    // You can add a success indicator here if needed
-                },
-                
-                updateDebugInfo: function(response) {
-                    if (response.interaction_count !== undefined) {
-                        var countElements = document.querySelectorAll('#interaction-count, #interaction-count-debug');
-                        countElements.forEach(function(el) {
-                            el.textContent = response.interaction_count;
-                        });
-                    }
-                }
-            };
-            
-            // Make submitInteraction globally available for author's JavaScript
-            window.submitInteraction = function(data) {
-                if (typeof data !== 'object') {
-                    console.error('submitInteraction: data must be an object');
-                    return;
-                }
-                
-                // Add timestamp if not provided
-                if (!data.timestamp) {
-                    data.timestamp = new Date().toISOString();
-                }
-                
-                // Add block context
-                data.block_id = '{{ block_id }}';
-                data.display_name = '{{ display_name }}';
-                
-                console.log('submitInteraction called with:', data);
-                window.XBlockInterface.saveInteraction(data);
-            };
-            
-            // Initialize when DOM is ready
-            $(document).ready(function() {
-                console.log('InteractiveJSBlock initialized for block: {{ block_id }}');
-                
-                // Apply author's CSS if provided
-                {% if css_content %}
-                var styleElement = document.createElement('style');
-                styleElement.textContent = '{{ css_content|safe|escapejs }}';
-                document.head.appendChild(styleElement);
-                {% endif %}
-                
-                // Execute author's JavaScript if provided
-                {% if js_content %}
-                try {
-                    {{ js_content|safe }}
-                } catch (error) {
-                    console.error('Error executing author JavaScript:', error);
-                    window.XBlockInterface.showError('JavaScript error: ' + error.message);
-                }
-                {% endif %}
-            });
-            
-        })();
-    </script>
+    <!-- Hidden elements for author's CSS and JavaScript content -->
+    {% if css_content %}
+    <style data-author-css style="display: none;">{{ css_content|safe }}</style>
+    {% endif %}
+    
+    {% if js_content %}
+    <script data-author-js style="display: none;">{{ js_content|safe }}</script>
+    {% endif %}
 </div>
 {% else %}
 <div class="interactive-js-block">
