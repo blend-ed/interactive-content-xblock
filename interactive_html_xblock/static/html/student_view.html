@@ -1,0 +1,77 @@
+{% load i18n %}
+
+{% if html_content %}
+<div class="interactive-js-block" data-block-id="{{ block_id }}">
+    <!-- Debug Panel (Staff Only) -->
+    {% if enable_debug_mode and is_staff %}
+    <div class="debug-panel" id="debug-panel">
+        <h4>{% trans "Debug Information (Staff Only)" %}</h4>
+        <div class="debug-info">
+            <p><strong>{% trans "Block ID" %}:</strong> {{ block_id }}</p>
+            <p><strong>{% trans "User ID" %}:</strong> {{ user_id }}</p>
+            <p><strong>{% trans "Interaction Count" %}:</strong> <span id="debug-interaction-count">{{ interaction_count }}</span></p>
+            <p><strong>{% trans "Last Interaction" %}:</strong> <span id="debug-last-interaction">{{ last_interaction_time }}</span></p>
+            <p><strong>{% trans "Is Correct" %}:</strong> <span id="debug-is-correct">{{ is_correct|yesno:"Yes,No" }}</span></p>
+            <p><strong>{% trans "Score" %}:</strong> <span id="debug-score">{{ score }}/{{ weight }}</span></p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Previous Response Display -->
+    {% if show_previous_response and learner_response and show_feedback_to_learners %}
+    <div class="previous-response" id="previous-response">
+        <div class="feedback-display">
+            <div class="feedback-status {% if is_correct %}correct{% else %}incorrect{% endif %}">
+                <span class="status-icon">{% if is_correct %}✓{% else %}✗{% endif %}</span>
+                <span class="status-text">{% if is_correct %}{% trans "Correct" %}{% else %}{% trans "Incorrect" %}{% endif %}</span>
+            </div>
+            <div class="score-display">
+                <span class="score-label">{% trans "Score" %}:</span>
+                <span class="score-value">{{ score }}/{{ weight }}</span>
+            </div>
+            {% if feedback_message %}
+            <div class="feedback-message">
+                <span class="message-label">{% trans "Feedback" %}:</span>
+                <span class="message-text">{{ feedback_message }}</span>
+            </div>
+            {% endif %}
+            {% if learner_response.timeSpent %}
+            <div class="time-spent">
+                <span class="message-label">{% trans "Time spent" %}:</span>
+                <span class="message-text">{{ learner_response.timeSpent }}s</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Feedback display for new responses -->
+    <div class="feedback-display" id="feedback-display" style="display: none;" role="alert">
+        <div class="feedback-status" id="feedback-status">
+            <span class="status-icon" id="status-icon"></span>
+            <span class="status-text" id="status-text"></span>
+        </div>
+        <div class="score-display" id="score-display">
+            <span class="score-label">{% trans "Score" %}:</span>
+            <span class="score-value" id="score-value"></span>
+        </div>
+        <div class="feedback-message" id="feedback-message-container">
+            <span class="message-label">{% trans "Feedback" %}:</span>
+            <span class="message-text" id="feedback-message-text"></span>
+        </div>
+    </div>
+
+    <!-- Author's HTML Content -->
+    <div class="interactive-content" id="interactive-content">
+        {{ html_content|safe }}
+    </div>
+
+    <!-- Author's CSS and JS (JS uses text/plain so it only runs via initializeAuthorContent) -->
+    <style id="author-css">{{ css_content|safe }}</style>
+    <script id="author-js" type="text/plain">{{ js_content|safe }}</script>
+</div>
+{% else %}
+<div class="interactive-js-block">
+    <p>{% trans "No content. Please add HTML content in the studio." %}</p>
+</div>
+{% endif %} 

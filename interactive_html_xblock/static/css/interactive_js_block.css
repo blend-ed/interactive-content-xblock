@@ -1,136 +1,135 @@
-/* InteractiveJSBlock Student View Styles */
+/* InteractiveJSBlock Styles */
 
 .interactive-js-block {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    margin: 20px 0;
-    border: 1px solid #e1e5e9;
-    border-radius: 8px;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 20px;
     background: #ffffff;
+    border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.interactive-js-header {
-    padding: 15px 20px;
-    border-bottom: 1px solid #e1e5e9;
-    background: #f8f9fa;
-    border-radius: 8px 8px 0 0;
-}
-
-.interactive-js-header h3 {
-    margin: 0 0 5px 0;
-    color: #2c3e50;
-    font-size: 1.2em;
-    font-weight: 600;
-}
-
-.debug-info {
-    font-size: 0.85em;
-    color: #6c757d;
-}
-
-.interactive-js-content {
-    padding: 20px;
-}
-
-.author-html {
-    /* Author's HTML content will be rendered here */
-    min-height: 50px;
-}
-
-/* Debug Panel Styles */
+/* Debug Panel */
 .debug-panel {
-    margin-top: 20px;
-    padding: 15px;
     background: #f8f9fa;
     border: 1px solid #dee2e6;
-    border-radius: 4px;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 20px;
     font-size: 0.9em;
 }
 
 .debug-panel h4 {
     margin: 0 0 10px 0;
     color: #495057;
-    font-size: 1em;
+    font-size: 1.1em;
     font-weight: 600;
 }
 
-.debug-section {
-    margin-bottom: 10px;
+.debug-info p {
+    margin: 5px 0;
+    color: #6c757d;
 }
 
-.debug-section strong {
+.debug-info strong {
     color: #495057;
 }
 
-.debug-section pre {
+/* Previous Response Display */
+.previous-response {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.previous-response h4 {
+    margin: 0 0 10px 0;
+    color: #495057;
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.response-data pre {
     background: #ffffff;
     border: 1px solid #dee2e6;
-    border-radius: 3px;
-    padding: 8px;
-    margin: 5px 0;
-    font-size: 0.8em;
+    border-radius: 4px;
+    padding: 10px;
+    font-size: 0.85em;
     overflow-x: auto;
-    max-height: 100px;
+    max-height: 200px;
     overflow-y: auto;
+}
+
+/* Feedback Display */
+.feedback-display {
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 15px;
+    margin-top: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.feedback-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.feedback-status.correct {
+    color: #28a745;
+}
+
+.feedback-status.incorrect {
+    color: #dc3545;
+}
+
+.status-icon {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.score-display {
+    margin-bottom: 10px;
+}
+
+.score-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.score-value {
+    color: #007bff;
+    font-weight: 600;
+}
+
+.feedback-message {
+    margin-top: 10px;
+}
+
+.message-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.message-text {
+    color: #6c757d;
+    margin-left: 5px;
+}
+
+/* Interactive Content */
+.interactive-content {
+    margin-top: 20px;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
     .interactive-js-block {
-        margin: 10px 0;
-        border-radius: 4px;
-    }
-    
-    .interactive-js-header {
-        padding: 10px 15px;
-    }
-    
-    .interactive-js-content {
         padding: 15px;
     }
-    
-    .debug-panel {
-        margin-top: 15px;
-        padding: 10px;
-    }
 }
-
-/* Loading State */
-.interactive-js-block.loading {
-    opacity: 0.7;
-    pointer-events: none;
-}
-
-.interactive-js-block.loading::after {
-    content: "Loading...";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 4px;
-    font-size: 0.9em;
-}
-
-/* Error State */
-.interactive-js-block.error {
-    border-color: #dc3545;
-    background: #fff5f5;
-}
-
-.interactive-js-block.error .interactive-js-header {
-    background: #f8d7da;
-    border-bottom-color: #dc3545;
-}
-
-/* Success State */
-.interactive-js-block.success {
-    border-color: #28a745;
-}
-
-.interactive-js-block.success .interactive-js-header {
-    background: #d4edda;
-    border-bottom-color: #28a745;
-} 

@@ -1,0 +1,163 @@
+{% load i18n %}
+<div class="wrapper-comp-settings is-active editor-with-buttons" id="settings-tab">
+  <ul class="list-input settings-list">
+    <li class="field comp-setting-entry is-set">
+      <div class="wrapper-comp-setting">
+        <label class="label setting-label" for="xb_display_name">{% trans "Display Name" %}</label>
+        <input class="input setting-input" name="xb_display_name" id="xb_display_name" value="{{ display_name }}" type="text" />
+      </div>
+      <span class="tip setting-help">{% trans "Display name for this module" %}</span>
+    </li>
+
+    <li class="field comp-setting-entry is-set">
+      <div class="wrapper-comp-setting">
+        <label class="label setting-label" for="xb_html_content">{% trans "HTML Content" %}</label>
+        <textarea class="input setting-input" name="xb_html_content" id="xb_html_content" rows="10">{{ html_content }}</textarea>
+      </div>
+      <span class="tip setting-help">{% trans "Enter the HTML content that will be rendered in the interactive block" %}</span>
+    </li>
+
+    <li class="field comp-setting-entry is-set">
+      <div class="wrapper-comp-setting">
+        <label class="label setting-label" for="xb_css_content">{% trans "CSS Styles" %}</label>
+        <textarea class="input setting-input" name="xb_css_content" id="xb_css_content" rows="10">{{ css_content }}</textarea>
+      </div>
+      <span class="tip setting-help">{% trans "Enter CSS styles for your interactive content" %}</span>
+    </li>
+
+    <li class="field comp-setting-entry is-set">
+      <div class="wrapper-comp-setting">
+        <label class="label setting-label" for="xb_js_content">{% trans "JavaScript Code" %}</label>
+        <textarea class="input setting-input" name="xb_js_content" id="xb_js_content" rows="10">{{ js_content }}</textarea>
+      </div>
+      <span class="tip setting-help">{% trans "Enter JavaScript code for interactivity. Use submitInteraction(data) to send data to the XBlock" %}</span>
+    </li>
+
+    <li class="field comp-setting-entry is-set">
+      <div class="wrapper-comp-setting">
+        <label class="label setting-label" for="xb_weight">{% trans "Weight" %}</label>
+        <input class="input setting-input" name="xb_weight" id="xb_weight" value="{{ weight }}" type="number" min="0" step="0.1" />
+      </div>
+      <span class="tip setting-help">{% trans "Weight of this problem for grading" %}</span>
+    </li>
+
+    <li class="field comp-setting-entry is-set">
+      <div class="wrapper-comp-setting">
+        <label class="label setting-label" for="xb_enable_debug_mode">{% trans "Enable Debug Mode" %}</label>
+        <select class="input setting-input" name="xb_enable_debug_mode" id="xb_enable_debug_mode">
+          <option value="1" {% if enable_debug_mode %}selected{% endif %}>{% trans "True" %}</option>
+          <option value="0" {% if not enable_debug_mode %}selected{% endif %}>{% trans "False" %}</option>
+        </select>
+      </div>
+      <span class="tip setting-help">{% trans "Enable debug mode for development" %}</span>
+    </li>
+
+    <li class="field comp-setting-entry is-set">
+      <div class="wrapper-comp-setting">
+        <label class="label setting-label" for="xb_auto_grade_enabled">{% trans "Auto Grade Enabled" %}</label>
+        <select class="input setting-input" name="xb_auto_grade_enabled" id="xb_auto_grade_enabled">
+          <option value="1" {% if auto_grade_enabled %}selected{% endif %}>{% trans "True" %}</option>
+          <option value="0" {% if not auto_grade_enabled %}selected{% endif %}>{% trans "False" %}</option>
+        </select>
+      </div>
+      <span class="tip setting-help">{% trans "Enable automatic grading based on interaction data" %}</span>
+    </li>
+
+    <li class="field comp-setting-entry is-set">
+      <div class="wrapper-comp-setting">
+        <label class="label setting-label" for="xb_show_feedback_to_learners">{% trans "Show Feedback to Learners" %}</label>
+        <select class="input setting-input" name="xb_show_feedback_to_learners" id="xb_show_feedback_to_learners">
+          <option value="1" {% if show_feedback_to_learners %}selected{% endif %}>{% trans "True" %}</option>
+          <option value="0" {% if not show_feedback_to_learners %}selected{% endif %}>{% trans "False" %}</option>
+        </select>
+      </div>
+      <span class="tip setting-help">{% trans "Show correct/incorrect feedback to learners" %}</span>
+    </li>
+
+    <li class="field comp-setting-entry is-set">
+      <div class="wrapper-comp-setting">
+        <label class="label setting-label" for="xb_show_previous_response">{% trans "Show Previous Response" %}</label>
+        <select class="input setting-input" name="xb_show_previous_response" id="xb_show_previous_response">
+          <option value="1" {% if show_previous_response %}selected{% endif %}>{% trans "True" %}</option>
+          <option value="0" {% if not show_previous_response %}selected{% endif %}>{% trans "False" %}</option>
+        </select>
+      </div>
+      <span class="tip setting-help">{% trans "Show learner their previous response when they return" %}</span>
+    </li>
+
+    {# ── Grading Configuration ── #}
+    <li class="field comp-setting-entry is-set" id="grading-section">
+      <div class="wrapper-comp-setting">
+        <label class="label setting-label">{% trans "Grading Configuration" %}</label>
+
+        <div id="grading-mode-wrapper" style="margin-bottom: 12px;">
+          <label class="label setting-label" for="xb_grading_mode" style="font-size: 0.9em;">
+            {% trans "Answer Matching Mode" %}
+          </label>
+          <select class="input setting-input" id="xb_grading_mode" style="width: auto;">
+            <option value="none">{% trans "None (JS controls grading)" %}</option>
+            <option value="single">{% trans "Single Answer" %}</option>
+            <option value="multi">{% trans "Multiple Fields" %}</option>
+          </select>
+          <span class="tip setting-help">{% trans "Choose 'None' if your JavaScript passes correct: true/false in submitInteraction()." %}</span>
+        </div>
+
+        <div id="grading-single-panel" style="display: none; margin-bottom: 12px;">
+          <label class="label setting-label" for="xb_single_answer" style="font-size: 0.9em;">
+            {% trans "Correct Answer" %}
+          </label>
+          <input class="input setting-input" type="text" id="xb_single_answer" placeholder="e.g. 4" />
+          <span class="tip setting-help">{% trans "The expected value. Comparison is case-insensitive." %}</span>
+        </div>
+
+        <div id="grading-multi-panel" style="display: none; margin-bottom: 12px;">
+          <label class="label setting-label" style="font-size: 0.9em;">{% trans "Answer Fields" %}</label>
+          <div id="grading-fields-list"></div>
+          <a href="#" id="grading-add-field" class="button" style="font-size: 0.85em; margin-top: 6px;">+ {% trans "Add Field" %}</a>
+          <span class="tip setting-help">{% trans "Map each field name to its expected value. Partial credit is awarded proportionally." %}</span>
+        </div>
+
+        <div style="margin-bottom: 12px;">
+          <label class="label setting-label" for="xb_correct_feedback" style="font-size: 0.9em;">
+            {% trans "Correct Feedback" %}
+          </label>
+          <input class="input setting-input" type="text" id="xb_correct_feedback" placeholder="Great job!" />
+        </div>
+        <div style="margin-bottom: 12px;">
+          <label class="label setting-label" for="xb_incorrect_feedback" style="font-size: 0.9em;">
+            {% trans "Incorrect Feedback" %}
+          </label>
+          <input class="input setting-input" type="text" id="xb_incorrect_feedback" placeholder="Try again." />
+        </div>
+        <span class="tip setting-help">{% trans "Feedback is shown even when your JavaScript controls grading." %}</span>
+      </div>
+    </li>
+
+    {# Hidden textarea for data transport #}
+    <textarea name="xb_correct_answers" id="xb_correct_answers" style="display:none;">{{ correct_answers }}</textarea>
+
+    {# ── Test Grading ── #}
+    <li class="field comp-setting-entry is-set" id="test-grading-section">
+      <div class="wrapper-comp-setting">
+        <label class="label setting-label">{% trans "Test Grading" %}</label>
+        <span class="tip setting-help" style="margin-bottom: 8px; display: block;">
+          {% trans "Verify your grading setup. Enter a test answer and see the result instantly." %}
+        </span>
+        <div id="test-grading-inputs" style="margin-bottom: 10px;"></div>
+        <a href="#" id="test-grading-btn" class="button action-primary" style="font-size: 0.9em;">{% trans "Run Test" %}</a>
+        <div id="test-grading-result" style="display: none; margin-top: 12px; padding: 12px; border-radius: 4px; font-size: 0.9em;"></div>
+      </div>
+    </li>
+  </ul>
+
+  <div class="xblock-actions">
+    <ul>
+      <li class="action-item">
+        <a href="#" class="button action-primary save-button">{% trans "Save" %}</a>
+      </li>
+      <li class="action-item">
+        <a href="#" class="button cancel-button">{% trans "Cancel" %}</a>
+      </li>
+    </ul>
+  </div>
+</div>

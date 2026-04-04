@@ -1,3 +1,7 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# Interactive XBlock, Copyright (C) 2026 Blend-ed
+#
 """
 InteractiveJSBlock - A custom Open edX XBlock for creating interactive HTML/CSS/JS content
 with learner interaction tracking.
