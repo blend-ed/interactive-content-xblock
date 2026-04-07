@@ -7,6 +7,10 @@ InteractiveJSBlock
    :target: https://github.com/blend-ed/interactive-html-xblock/blob/main/LICENSE
 .. |status| image:: https://img.shields.io/badge/status-alpha-orange.svg
 
+.. tip::
+   **New here?** Open the `interactive walkthrough <walkthrough/interactive_jsblock_workflow_walkthrough.html>`_
+   in your browser for a visual, step-by-step guide to the full authoring workflow.
+
 A custom Open edX XBlock for creating interactive HTML/CSS/JS content with learner interaction tracking and auto-grading.
 
 This XBlock allows course authors to define custom HTML, CSS, and JavaScript content and automatically captures learner interactions in JSON format for grading, analytics, or state restoration.
