@@ -3,11 +3,11 @@
 # Interactive XBlock, Copyright (C) 2026 Blend-ed
 #
 """
-InteractiveJSBlock - A custom Open edX XBlock for creating interactive HTML/CSS/JS content
+InteractiveXBlock - A custom Open edX XBlock for creating interactive HTML/CSS/JS content
 with learner interaction tracking.
 """
 
-from .xblocks import InteractiveJSBlock
+from .xblocks import InteractiveXBlock
 
 __version__ = "1.0.0"
-__all__ = ['InteractiveJSBlock']
+__all__ = ['InteractiveXBlock']

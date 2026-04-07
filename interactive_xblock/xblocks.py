@@ -1,5 +1,5 @@
 """
-This is the core logic for the InteractiveJSBlock
+This is the core logic for the InteractiveXBlock
 """
 from xblock.core import XBlock
 try:
@@ -9,15 +9,15 @@ except ImportError:
     class CompletableXBlockMixin:
         pass
 
-from .models import InteractiveJSBlockModelMixin
-from .views import InteractiveJSBlockViewMixin
+from .models import InteractiveXBlockModelMixin
+from .views import InteractiveXBlockViewMixin
 
 
 @XBlock.wants('user')
 @XBlock.wants('i18n')
-class InteractiveJSBlock(
-        InteractiveJSBlockModelMixin,
-        InteractiveJSBlockViewMixin,
+class InteractiveXBlock(
+        InteractiveXBlockModelMixin,
+        InteractiveXBlockViewMixin,
         CompletableXBlockMixin,
         XBlock,
 ):
@@ -33,18 +33,18 @@ class InteractiveJSBlock(
     def workbench_scenarios():
         """Create canned scenarios for display in the workbench."""
         return [
-            ("InteractiveJSBlock",
-             """<interactive_js_block/>
+            ("InteractiveXBlock",
+             """<interactive_xblock/>
              """),
-            ("Multiple InteractiveJSBlock",
+            ("Multiple InteractiveXBlock",
              """<vertical_demo>
-                <interactive_js_block/>
-                <interactive_js_block/>
-                <interactive_js_block/>
+                <interactive_xblock/>
+                <interactive_xblock/>
+                <interactive_xblock/>
                 </vertical_demo>
              """),
-            ("InteractiveJSBlock with Quiz",
-             """<interactive_js_block>
+            ("InteractiveXBlock with Quiz",
+             """<interactive_xblock>
                 <html_content>
                 <div class="quiz">
                   <h3>Geography Quiz</h3>
@@ -93,6 +93,6 @@ class InteractiveJSBlock(
                   });
                 }
                 </js_content>
-                </interactive_js_block>
+                </interactive_xblock>
              """),
         ] 

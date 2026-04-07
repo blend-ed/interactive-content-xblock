@@ -1,5 +1,5 @@
 """
-Tests for InteractiveJSBlock
+Tests for InteractiveXBlock
 """
 import unittest
 from unittest.mock import Mock, patch
@@ -7,19 +7,19 @@ from unittest.mock import Mock, patch
 from xblock.test.tools import make_xblock
 from xblock.test.scenario import TestScenario
 
-from interactive_html_xblock.xblocks import InteractiveJSBlock
+from interactive_xblock.xblocks import InteractiveXBlock
 
 
-class TestInteractiveJSBlock(unittest.TestCase):
+class TestInteractiveXBlock(unittest.TestCase):
     """
-    Test cases for InteractiveJSBlock
+    Test cases for InteractiveXBlock
     """
 
     def setUp(self):
         """Set up test fixtures"""
         self.xblock = make_xblock(
-            'interactive_js_block',
-            InteractiveJSBlock,
+            'interactive_xblock',
+            InteractiveXBlock,
             {
                 'display_name': 'Test Interactive Block',
                 'html_content': '<div>Test HTML</div>',
@@ -186,7 +186,7 @@ class TestInteractiveJSBlock(unittest.TestCase):
 
     def test_workbench_scenarios(self):
         """Test that workbench scenarios are defined"""
-        scenarios = InteractiveJSBlock.workbench_scenarios()
+        scenarios = InteractiveXBlock.workbench_scenarios()
 
         self.assertIsInstance(scenarios, list)
         self.assertGreater(len(scenarios), 0)
@@ -195,7 +195,7 @@ class TestInteractiveJSBlock(unittest.TestCase):
         for title, xml in scenarios:
             self.assertIsInstance(title, str)
             self.assertIsInstance(xml, str)
-            self.assertIn('interactive_js_block', xml)
+            self.assertIn('interactive_xblock', xml)
 
     def test_debug_mode_enabled(self):
         """Test that debug mode shows debug information"""

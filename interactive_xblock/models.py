@@ -1,13 +1,13 @@
 """
-Handle data access logic for the InteractiveJSBlock
+Handle data access logic for the InteractiveXBlock
 """
 from django.utils.translation import gettext_lazy as _
 from xblock.fields import Boolean, Float, Integer, JSONField, Scope, String
 
 
-class InteractiveJSBlockModelMixin(object):
+class InteractiveXBlockModelMixin(object):
     """
-    Handle data access for InteractiveJSBlock instances
+    Handle data access for InteractiveXBlock instances
     """
 
     # Author content fields
@@ -106,7 +106,7 @@ class InteractiveJSBlockModelMixin(object):
     display_name = String(
         display_name=_('Display Name'),
         help=_('Display name for this interactive block'),
-        default='Interactive JS Block',
+        default='Interactive XBlock',
         scope=Scope.content,
     )
 

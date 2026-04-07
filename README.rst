@@ -1,15 +1,15 @@
-InteractiveJSBlock
+InteractiveXBlock
 ==================
 
 |license| |status|
 
 .. |license| image:: https://img.shields.io/badge/license-AGPL--3.0-blue.svg
-   :target: https://github.com/blend-ed/interactive-html-xblock/blob/main/LICENSE
+   :target: https://github.com/blend-ed/interactive-xblock/blob/main/LICENSE
 .. |status| image:: https://img.shields.io/badge/status-alpha-orange.svg
 
-.. image:: walkthrough/interactive-jsblock-workflow.gif
-   :alt: Interactive JS Block workflow walkthrough
-   :target: https://blend-ed.github.io/interactive-html-xblock/walkthrough/interactive_jsblock_workflow_walkthrough.html
+.. image:: walkthrough/interactive-xblock-workflow.gif
+   :alt: Interactive XBlock workflow walkthrough
+   :target: https://blend-ed.github.io/interactive-xblock/walkthrough/interactive_xblock_workflow_walkthrough.html
 
 A custom Open edX XBlock for creating interactive HTML/CSS/JS content with learner interaction tracking and auto-grading.
 
@@ -45,12 +45,12 @@ Add to your ``OPENEDX_EXTRA_PIP_REQUIREMENTS``:
 
 .. code-block::
 
-    git+https://github.com/blend-ed/interactive-html-xblock.git@main
+    git+https://github.com/blend-ed/interactive-xblock.git@main
 
 Course Staff
 ~~~~~~~~~~~~
 
-Add ``interactive_js_block`` to your course's Advanced Module List:
+Add ``interactive_xblock`` to your course's Advanced Module List:
 
     Settings → Advanced Settings → Advanced Module List
 
@@ -60,7 +60,7 @@ Usage
 Studio View (Authoring)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-1. Add the InteractiveJSBlock component to your course
+1. Add the InteractiveXBlock component to your course
 2. Click "Edit" to open the Studio editor
 3. Configure the following:
 
@@ -150,8 +150,8 @@ Testing
 
     tox -e py312-django52                # Django 5.2
     tox -e py312-django42                # Django 4.2
-    pytest tests/test_interactive_js_block.py  # specific file
-    pytest tests/test_interactive_js_block.py::TestInteractiveJSBlock::test_method_name  # single test
+    pytest tests/test_interactive_xblock.py  # specific file
+    pytest tests/test_interactive_xblock.py::TestInteractiveXBlock::test_method_name  # single test
 
 Quality
 ~~~~~~~
@@ -167,27 +167,27 @@ Development with Tutor
 
    .. code-block:: bash
 
-       cd interactive-html-xblock
+       cd interactive-xblock
        pip install -e .
 
 2. Add to Tutor mounts:
 
    .. code-block:: bash
 
-       tutor mounts add /path/to/interactive-html-xblock
+       tutor mounts add /path/to/interactive-xblock
 
-3. Create a Tutor plugin (``touch $(tutor plugins printroot)/mount_interactive_html_xblock.py``):
+3. Create a Tutor plugin (``touch $(tutor plugins printroot)/mount_interactive_xblock.py``):
 
    .. code-block:: python
 
        from tutor import hooks
-       hooks.Filters.MOUNTED_DIRECTORIES.add_item(("openedx", "interactive_html_xblock"))
+       hooks.Filters.MOUNTED_DIRECTORIES.add_item(("openedx", "interactive_xblock"))
 
 4. Enable and build:
 
    .. code-block:: bash
 
-       tutor plugins enable mount_interactive_html_xblock
+       tutor plugins enable mount_interactive_xblock
        tutor images build openedx-dev
        tutor dev start -d
 
