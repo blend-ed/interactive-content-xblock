@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interactive Content XBlock — Workflow Walkthrough</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --color-background-primary: #ffffff;
+    --color-background-secondary: #f4f5f7;
+    --color-text-primary: #1a1d23;
+    --color-text-secondary: #6b7280;
+    --color-border-secondary: #d1d5db;
+    --color-border-tertiary: #e5e7eb;
+    --border-radius-lg: 12px;
+    --border-radius-md: 8px;
+    --font-mono: 'SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', monospace;
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    padding: 2rem 1rem;
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #eef0f4;
+    color: var(--color-text-primary);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: 1px solid var(--color-border-secondary);
+    border-radius: var(--border-radius-md);
+    background: var(--color-background-primary);
+    color: var(--color-text-primary);
+    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  }
+
+  button:hover {
+    background: var(--color-background-secondary);
+    border-color: #b0b5be;
+  }
+
+  input[type="text"] {
+    font-family: inherit;
+    border: 1px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-md);
+    background: var(--color-background-primary);
+    color: var(--color-text-primary);
+    outline: none;
+  }
+
+  input[type="text"]:focus {
+    border-color: #378ADD;
+    box-shadow: 0 0 0 3px rgba(55, 138, 221, 0.12);
+  }
+
+  .walkthrough-card {
+    max-width: 720px;
+    margin: 0 auto;
+    background: var(--color-background-primary);
+    border: 1px solid var(--color-border-tertiary);
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
+    padding: 2rem 2rem 1.5rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="walkthrough-card">
+
+<div id="stepper" style="display: flex; align-items: center; gap: 0; margin-bottom: 2rem; justify-content: center;"></div>
+
+<div id="step-content" style="min-height: 420px;"></div>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem;">
+  <button id="prev-btn" style="font-size: 14px; padding: 8px 20px;">Back</button>
+  <span style="font-size: 13px; color: var(--color-text-secondary);" id="step-label"></span>
+  <button id="next-btn" style="font-size: 14px; padding: 8px 20px;">Next</button>
+</div>
+</div>
+
+<script>
+const steps = [
+  {
+    title: "Add the XBlock",
+    desc: "In Open edX Studio, click <strong>Advanced</strong> → select <strong>Interactive Content XBlock</strong> from the component picker. This adds an empty interactive block to your course unit.",
+    visual: `
+      <div style="background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1.5rem; min-height: 340px; display: flex; align-items: center; justify-content: center;">
+        <div style="background: var(--color-background-primary); border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); padding: 1.25rem 1.5rem; width: 320px;">
+          <p style="font-weight: 500; font-size: 15px; margin: 0 0 16px;">Add advanced component</p>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <label style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--color-text-secondary); cursor: pointer;"><span style="width: 18px; height: 18px; border-radius: 50%; border: 0.5px solid var(--color-border-secondary); display: inline-block;"></span> Content Experiment</label>
+            <label style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--color-text-secondary); cursor: pointer;"><span style="width: 18px; height: 18px; border-radius: 50%; border: 0.5px solid var(--color-border-secondary); display: inline-block;"></span> Google Calendar</label>
+            <label style="display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; color: var(--color-text-primary); cursor: pointer;"><span style="width: 18px; height: 18px; border-radius: 50%; background: #378ADD; border: 2px solid #378ADD; display: inline-flex; align-items: center; justify-content: center;"><span style="width: 6px; height: 6px; background: white; border-radius: 50%;"></span></span> Interactive Content XBlock</label>
+            <label style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--color-text-secondary); cursor: pointer;"><span style="width: 18px; height: 18px; border-radius: 50%; border: 0.5px solid var(--color-border-secondary); display: inline-block;"></span> LTI Consumer</label>
+            <label style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--color-text-secondary); cursor: pointer;"><span style="width: 18px; height: 18px; border-radius: 50%; border: 0.5px solid var(--color-border-secondary); display: inline-block;"></span> Poll</label>
+          </div>
+          <div style="margin-top: 20px; display: flex; gap: 12px; justify-content: flex-end;">
+            <button style="font-size: 13px; padding: 6px 16px;">Cancel</button>
+            <button style="font-size: 13px; padding: 6px 16px; background: #378ADD; color: white; border-color: #378ADD; border-radius: var(--border-radius-md);">Select</button>
+          </div>
+        </div>
+      </div>`
+  },
+  {
+    title: "Describe your content",
+    desc: "Open the <strong>Content Generator</strong> tool. Type a plain-text description of the interactive exercise you want — a quiz, simulation, roleplay, lab, timeline, or anything else. Pick from suggested prompts or write your own.",
+    visual: `
+      <div style="background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1.5rem; min-height: 340px;">
+        <div style="margin-bottom: 6px;"><span style="font-size: 11px; letter-spacing: 0.08em; color: var(--color-text-secondary); text-transform: uppercase;">interactivecontentxblock</span></div>
+        <p style="font-size: 22px; font-weight: 500; margin: 0 0 6px;">Content <span style="font-style: italic; color: #378ADD;">Generator</span></p>
+        <p style="font-size: 13px; color: var(--color-text-secondary); margin: 0 0 20px;">Describe the interactive exercise you need and let AI generate XBlock-ready HTML, CSS, and JavaScript.</p>
+        <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 12px 14px; margin-bottom: 16px;">
+          <p style="font-size: 11px; letter-spacing: 0.06em; color: var(--color-text-secondary); text-transform: uppercase; margin: 0 0 8px;">Describe your interactive content</p>
+          <p style="font-size: 14px; color: var(--color-text-primary); margin: 0; line-height: 1.6;">Interactive simulation of a solar system with orbiting planets</p>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span style="font-size: 12px; padding: 6px 12px; border-radius: 20px; border: 0.5px solid var(--color-border-tertiary); color: var(--color-text-secondary); background: var(--color-background-primary);">Virtual chemistry lab</span>
+          <span style="font-size: 12px; padding: 6px 12px; border-radius: 20px; border: 0.5px solid var(--color-border-tertiary); color: var(--color-text-secondary); background: var(--color-background-primary);">Roleplay: negotiate a deal</span>
+          <span style="font-size: 12px; padding: 6px 12px; border-radius: 20px; border: 0.5px solid var(--color-border-tertiary); color: var(--color-text-secondary); background: var(--color-background-primary);">Decision tree adventure</span>
+          <span style="font-size: 12px; padding: 6px 12px; border-radius: 20px; border: 0.5px solid var(--color-border-tertiary); color: var(--color-text-secondary); background: var(--color-background-primary);">French Revolution timeline</span>
+        </div>
+      </div>`
+  },
+  {
+    title: "AI generates the content",
+    desc: "The generator calls the AI (Gemini API) and produces a live preview with separate <strong>HTML</strong>, <strong>CSS</strong>, <strong>JS</strong>, and <strong>Grading</strong> tabs. You see the interactive running in real time.",
+    visual: `
+      <div style="background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1.5rem; min-height: 340px;">
+        <div style="display: grid; grid-template-columns: 1fr 1.4fr; gap: 16px;">
+          <div>
+            <p style="font-size: 11px; letter-spacing: 0.06em; color: var(--color-text-secondary); text-transform: uppercase; margin: 0 0 10px;">Refinement chat</p>
+            <div style="background: #378ADD; color: white; border-radius: 12px 12px 4px 12px; padding: 10px 14px; font-size: 13px; margin-bottom: 10px; line-height: 1.5;">Interactive simulation of a solar system with orbiting planets</div>
+            <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: 4px 12px 12px 12px; padding: 10px 14px; font-size: 13px; color: var(--color-text-secondary); line-height: 1.5;">Content generated successfully.</div>
+            <div style="margin-top: 16px; display: flex; gap: 8px; align-items: center;">
+              <input type="text" placeholder="Describe changes to refine..." style="flex: 1; font-size: 13px; padding: 8px 12px;" readonly>
+              <button style="font-size: 13px; padding: 8px 14px; background: #378ADD; color: white; border-color: #378ADD; border-radius: var(--border-radius-md);">Send</button>
+            </div>
+          </div>
+          <div>
+            <p style="font-size: 11px; letter-spacing: 0.06em; color: var(--color-text-secondary); text-transform: uppercase; margin: 0 0 10px;">Live preview</p>
+            <div style="background: #1a1a2e; border-radius: var(--border-radius-md); height: 220px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+              <div style="width: 160px; height: 160px; border-radius: 50%; border: 1px dashed rgba(255,255,255,0.15); position: absolute;"></div>
+              <div style="width: 110px; height: 110px; border-radius: 50%; border: 1px dashed rgba(255,255,255,0.15); position: absolute;"></div>
+              <div style="width: 70px; height: 70px; border-radius: 50%; border: 1px dashed rgba(255,255,255,0.15); position: absolute;"></div>
+              <div style="width: 24px; height: 24px; border-radius: 50%; background: radial-gradient(circle at 40% 40%, #fff7a0, #f0c040); box-shadow: 0 0 20px rgba(240,192,64,0.5);"></div>
+              <div style="width: 6px; height: 6px; border-radius: 50%; background: #7aa5d4; position: absolute; top: 46px; left: 55%;"></div>
+              <div style="width: 8px; height: 8px; border-radius: 50%; background: #e07040; position: absolute; bottom: 60px; right: 40%;"></div>
+              <div style="width: 7px; height: 7px; border-radius: 50%; background: #5dca70; position: absolute; top: 55%; left: 38px;"></div>
+            </div>
+            <div style="display: flex; gap: 0; margin-top: 8px; border-bottom: 0.5px solid var(--color-border-tertiary);">
+              <span style="font-size: 12px; padding: 6px 12px; border-bottom: 2px solid #378ADD; color: var(--color-text-primary); font-weight: 500;">Preview</span>
+              <span style="font-size: 12px; padding: 6px 12px; color: var(--color-text-secondary);">HTML</span>
+              <span style="font-size: 12px; padding: 6px 12px; color: var(--color-text-secondary);">CSS</span>
+              <span style="font-size: 12px; padding: 6px 12px; color: var(--color-text-secondary);">JS</span>
+              <span style="font-size: 12px; padding: 6px 12px; color: var(--color-text-secondary);">Grading</span>
+              <span style="font-size: 12px; padding: 6px 12px; color: var(--color-text-secondary);">Export</span>
+            </div>
+          </div>
+        </div>
+      </div>`
+  },
+  {
+    title: "Refine with chat",
+    desc: "Not perfect? Use the <strong>Refinement chat</strong> to iterate. Ask for changes — \"make planets spherical\", \"add a size quiz\", \"change the background color\" — and the AI regenerates. Every version is saved in <strong>Generation History</strong> so you can load or remove any past attempt.",
+    visual: `
+      <div style="background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1.5rem; min-height: 340px;">
+        <p style="font-size: 11px; letter-spacing: 0.06em; color: var(--color-text-secondary); text-transform: uppercase; margin: 0 0 12px;">Generation history</p>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <p style="font-size: 14px; margin: 0; font-weight: 500;">arrange planets in order of its size quiz, display as spherical objects <span style="color: #378ADD;">[refined]</span></p>
+              <p style="font-size: 12px; color: var(--color-text-secondary); margin: 4px 0 0;">7/4/2026 11:09 AM</p>
+            </div>
+            <div style="display: flex; gap: 8px;"><button style="font-size: 12px; padding: 4px 12px;">Load</button><span style="font-size: 12px; color: #A32D2D; cursor: pointer; padding: 4px 8px;">Remove</span></div>
+          </div>
+          <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <p style="font-size: 14px; margin: 0;">Interactive simulation of a solar system with orbiting planets</p>
+              <p style="font-size: 12px; color: var(--color-text-secondary); margin: 4px 0 0;">7/4/2026 10:35 AM</p>
+            </div>
+            <div style="display: flex; gap: 8px;"><button style="font-size: 12px; padding: 4px 12px;">Load</button><span style="font-size: 12px; color: #A32D2D; cursor: pointer; padding: 4px 8px;">Remove</span></div>
+          </div>
+          <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <p style="font-size: 14px; margin: 0;">Virtual chemistry lab: mix two reagents and observe the reaction</p>
+              <p style="font-size: 12px; color: var(--color-text-secondary); margin: 4px 0 0;">4/4/2026 12:43 PM</p>
+            </div>
+            <div style="display: flex; gap: 8px;"><button style="font-size: 12px; padding: 4px 12px;">Load</button><span style="font-size: 12px; color: #A32D2D; cursor: pointer; padding: 4px 8px;">Remove</span></div>
+          </div>
+        </div>
+      </div>`
+  },
+  {
+    title: "Copy to XBlock",
+    desc: "Switch to the <strong>HTML</strong>, <strong>CSS</strong>, or <strong>JS</strong> tab and hit <strong>Copy</strong>. Then open the Interactive Content XBlock's edit dialog in Studio and paste the generated code into the HTML Content field. Save — done.",
+    visual: `
+      <div style="background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1.5rem; min-height: 340px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div>
+            <p style="font-size: 11px; letter-spacing: 0.06em; color: var(--color-text-secondary); text-transform: uppercase; margin: 0 0 10px;">Generator → copy code</p>
+            <div style="background: #1e1e2e; border-radius: var(--border-radius-md); padding: 14px; position: relative;">
+              <div style="display: flex; gap: 0; margin-bottom: 10px; border-bottom: 0.5px solid rgba(255,255,255,0.1);">
+                <span style="font-size: 11px; padding: 4px 10px; color: rgba(255,255,255,0.4);">Preview</span>
+                <span style="font-size: 11px; padding: 4px 10px; color: #7aa5d4; border-bottom: 2px solid #7aa5d4; font-weight: 500;">HTML</span>
+                <span style="font-size: 11px; padding: 4px 10px; color: rgba(255,255,255,0.4);">CSS</span>
+                <span style="font-size: 11px; padding: 4px 10px; color: rgba(255,255,255,0.4);">JS</span>
+              </div>
+              <pre style="font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,0.75); margin: 0; line-height: 1.7; white-space: pre-wrap; word-break: break-all;">&lt;div class="solar-system"&gt;
+  &lt;div class="sun"&gt;&lt;/div&gt;
+  &lt;div class="orbit"&gt;
+    &lt;div class="planet mercury"&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  ...</pre>
+              <div style="position: absolute; top: 14px; right: 14px;"><button style="font-size: 11px; padding: 3px 10px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); border-color: rgba(255,255,255,0.2); border-radius: 4px;">Copy</button></div>
+            </div>
+          </div>
+          <div>
+            <p style="font-size: 11px; letter-spacing: 0.06em; color: var(--color-text-secondary); text-transform: uppercase; margin: 0 0 10px;">Studio → paste into XBlock</p>
+            <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 14px;">
+              <p style="font-size: 15px; font-weight: 500; margin: 0 0 12px;">Editing: Interactive Content XBlock</p>
+              <div style="margin-bottom: 8px;">
+                <p style="font-size: 12px; color: var(--color-text-secondary); margin: 0 0 4px;">Display name</p>
+                <div style="border: 0.5px solid var(--color-border-tertiary); border-radius: 4px; padding: 8px 10px; font-size: 13px;">Solar System Simulation</div>
+              </div>
+              <div>
+                <p style="font-size: 12px; color: var(--color-text-secondary); margin: 0 0 4px;">HTML content</p>
+                <div style="border: 0.5px solid var(--color-border-tertiary); border-radius: 4px; padding: 8px 10px; font-family: var(--font-mono); font-size: 11px; color: var(--color-text-secondary); line-height: 1.6; min-height: 80px;">&lt;div class="solar-system"&gt;<br>  &lt;div class="sun"&gt;&lt;/div&gt;<br>  &lt;div class="orbit"&gt;...</div>
+              </div>
+              <div style="margin-top: 12px; display: flex; gap: 10px;">
+                <button style="font-size: 13px; padding: 6px 16px; background: #378ADD; color: white; border-color: #378ADD; border-radius: var(--border-radius-md);">Save</button>
+                <button style="font-size: 13px; padding: 6px 16px;">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`
+  },
+  {
+    title: "Learners interact",
+    desc: "Publish the unit and learners see the fully interactive content — simulations, quizzes, roleplay scenarios, virtual labs — running natively inside Open edX courseware. No iframes, no external dependencies.",
+    visual: `
+      <div style="background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1.5rem; min-height: 340px;">
+        <div style="background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden;">
+          <div style="display: flex; gap: 0; padding: 10px 16px; border-bottom: 0.5px solid var(--color-border-tertiary);">
+            <span style="font-size: 13px; font-weight: 500; padding-bottom: 6px; border-bottom: 2px solid #378ADD; margin-right: 20px;">Course</span>
+            <span style="font-size: 13px; color: var(--color-text-secondary); margin-right: 20px;">Progress</span>
+            <span style="font-size: 13px; color: var(--color-text-secondary); margin-right: 20px;">Dates</span>
+            <span style="font-size: 13px; color: var(--color-text-secondary);">Instructor</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 180px minmax(0, 1fr); min-height: 260px;">
+            <div style="border-right: 0.5px solid var(--color-border-tertiary); padding: 16px;">
+              <p style="font-size: 13px; font-weight: 500; margin: 0 0 12px;">Section</p>
+              <div style="background: var(--color-background-secondary); border-radius: 6px; padding: 8px 10px; font-size: 13px; margin-bottom: 6px;">Subsection</div>
+              <div style="padding: 6px 10px 6px 20px; font-size: 13px; color: #378ADD; font-weight: 500;">Unit</div>
+            </div>
+            <div style="padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <div style="background: #1a1a2e; border-radius: var(--border-radius-md); width: 100%; height: 200px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; margin-bottom: 12px;">
+                <div style="width: 140px; height: 140px; border-radius: 50%; border: 1px dashed rgba(255,255,255,0.12); position: absolute;"></div>
+                <div style="width: 100px; height: 100px; border-radius: 50%; border: 1px dashed rgba(255,255,255,0.12); position: absolute;"></div>
+                <div style="width: 60px; height: 60px; border-radius: 50%; border: 1px dashed rgba(255,255,255,0.12); position: absolute;"></div>
+                <div style="width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 40% 40%, #fff7a0, #f0c040); box-shadow: 0 0 16px rgba(240,192,64,0.4);"></div>
+                <div style="width: 5px; height: 5px; border-radius: 50%; background: #7aa5d4; position: absolute; top: 35px; right: 42%;"></div>
+                <div style="width: 7px; height: 7px; border-radius: 50%; background: #e07040; position: absolute; bottom: 50px; left: 38%;"></div>
+                <div style="width: 6px; height: 6px; border-radius: 50%; background: #5dca70; position: absolute; top: 52%; right: 30px;"></div>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <button style="font-size: 12px; padding: 6px 14px; background: #534AB7; color: white; border-color: #534AB7; border-radius: var(--border-radius-md);">Toggle Simulation</button>
+                <button style="font-size: 12px; padding: 6px 14px; background: #534AB7; color: white; border-color: #534AB7; border-radius: var(--border-radius-md);">Reset Simulation</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`
+  }
+];
+
+let current = 0;
+
+function renderStepper() {
+  const el = document.getElementById('stepper');
+  el.innerHTML = steps.map((s, i) => {
+    const active = i === current;
+    const done = i < current;
+    const circleStyle = active
+      ? 'background: #378ADD; color: white; border: 2px solid #378ADD;'
+      : done
+        ? 'background: var(--color-background-primary); color: #378ADD; border: 2px solid #378ADD;'
+        : 'background: var(--color-background-primary); color: var(--color-text-secondary); border: 0.5px solid var(--color-border-secondary);';
+    const line = i < steps.length - 1
+      ? `<div style="width: 32px; height: 2px; background: ${i < current ? '#378ADD' : 'var(--color-border-tertiary)'}; margin: 0 2px;"></div>`
+      : '';
+    return `<div style="display: flex; align-items: center;">
+      <div style="width: 28px; height: 28px; border-radius: 50%; ${circleStyle} display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; flex-shrink: 0; cursor: pointer;" onclick="goTo(${i})">${done ? '&#10003;' : i + 1}</div>
+      ${line}
+    </div>`;
+  }).join('');
+}
+
+function renderContent() {
+  const s = steps[current];
+  document.getElementById('step-content').innerHTML = `
+    <p style="font-size: 18px; font-weight: 500; margin: 0 0 8px;">${s.title}</p>
+    <p style="font-size: 14px; color: var(--color-text-secondary); line-height: 1.6; margin: 0 0 20px;">${s.desc}</p>
+    ${s.visual}
+  `;
+  document.getElementById('step-label').textContent = `Step ${current + 1} of ${steps.length}`;
+  document.getElementById('prev-btn').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('next-btn').textContent = current === steps.length - 1 ? 'Done' : 'Next';
+}
+
+function goTo(i) { current = i; renderStepper(); renderContent(); }
+
+document.getElementById('next-btn').addEventListener('click', () => {
+  if (current < steps.length - 1) { current++; renderStepper(); renderContent(); }
+});
+document.getElementById('prev-btn').addEventListener('click', () => {
+  if (current > 0) { current--; renderStepper(); renderContent(); }
+});
+
+renderStepper();
+renderContent();
+</script>
+
+</div>
+</body>
+</html>

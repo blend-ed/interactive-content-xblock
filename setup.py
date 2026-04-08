@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Package metadata for interactive_html_xblock.
+Package metadata for interactive-content-xblock.
 """
 import os
 import re
@@ -134,7 +134,7 @@ def package_data(pkg, roots):
     return {pkg: data}
 
 
-VERSION = get_version('interactive_html_xblock', '__init__.py')
+VERSION = get_version('interactive_content_xblock', '__init__.py')
 
 if sys.argv[-1] == 'tag':
     print("Tagging the version on github:")
@@ -146,36 +146,39 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.rst'), encoding="u
 CHANGELOG = open(os.path.join(os.path.dirname(__file__), 'CHANGELOG.rst'), encoding="utf8").read()
 
 setup(
-    name='interactive-html-xblock',
+    name='interactive-content-xblock',
     version=VERSION,
-    description="""Interactive HTML XBlock""",
+    description='Open edX XBlock for creating interactive HTML/CSS/JS content with learner interaction tracking and auto-grading.',
     long_description=README + '\n\n' + CHANGELOG,
     author='Zameel Hassan',
     author_email='zameel@blend-ed.com',
-    url='https://github.com/blend-ed/interactive-html-xblock',
+    url='https://github.com/blend-ed/interactive-content-xblock',
+    license='AGPL-3.0',
     packages=find_packages(
-        include=['interactive_html_xblock', 'interactive_html_xblock.*'],
+        include=['interactive_content_xblock', 'interactive_content_xblock.*'],
         exclude=["*tests"],
     ),
 
     include_package_data=True,
     install_requires=load_requirements('requirements/base.in'),
-    python_requires=">=3.12",
+    python_requires=">=3.11",
     zip_safe=False,
-    keywords='Python edx',
+    keywords='openedx xblock interactive html javascript grading',
     classifiers=[
         'Development Status :: 3 - Alpha',
-        'Intended Audience :: Developers',
-        'License :: Other/Proprietary License',
+        'Framework :: Django',
+        'Intended Audience :: Education',
+        'License :: OSI Approved :: GNU Affero General Public License v3',
         'Natural Language :: English',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
     ],
     entry_points={
         'xblock.v1': [
-            'interactive_js_block = interactive_html_xblock:InteractiveJSBlock',
+            'interactive_content_xblock = interactive_content_xblock:InteractiveContentXBlock',
         ]
     },
-    package_data=package_data("interactive_html_xblock", ["static", "public"]),
+    package_data=package_data("interactive_content_xblock", ["static", "public", "css", "templates"]),
 
 )

@@ -1,59 +1,73 @@
-InteractiveJSBlock
-================
+Interactive Content XBlock
+==================
 
-A custom Open edX XBlock for creating interactive HTML/CSS/JS content with learner interaction tracking.
+|license| |status|
 
-This XBlock allows course authors to define custom HTML, CSS, and JavaScript content and automatically captures learner interactions in JSON format for analytics, grading, or state restoration.
+.. |license| image:: https://img.shields.io/badge/license-AGPL--3.0-blue.svg
+   :target: https://github.com/blend-ed/interactive-content-xblock/blob/main/LICENSE
+.. |status| image:: https://img.shields.io/badge/status-alpha-orange.svg
+
+.. image:: walkthrough/interactive-content-xblock-workflow.gif
+   :alt: Interactive Content XBlock workflow walkthrough
+   :target: https://blend-ed.github.io/interactive-content-xblock/walkthrough/interactive_content_xblock_workflow_walkthrough.html
+
+A custom Open edX XBlock for creating interactive HTML/CSS/JS content with learner interaction tracking and auto-grading.
+
+This XBlock allows course authors to define custom HTML, CSS, and JavaScript content and automatically captures learner interactions in JSON format for grading, analytics, or state restoration.
 
 Features
 --------
 
-* **Custom HTML/CSS/JS Content**: Authors can define their own HTML, CSS, and JavaScript content
-* **Learner Interaction Tracking**: Automatically captures learner interactions in JSON format
-* **Auto-Grading Support**: Optional automatic grading based on interaction data
-* **Debug Mode**: Built-in debug panel for development and testing
-* **Studio Editor**: Tabbed interface for easy content editing
-* **Preview Functionality**: Live preview of content in studio
-* **Responsive Design**: Works on desktop and mobile devices
+* **Custom HTML/CSS/JS Content**: Authors define their own HTML, CSS, and JavaScript content in the Studio editor
+* **Learner Interaction Tracking**: Captures learner interactions via the ``submitInteraction(data)`` API
+* **Auto-Grading**: Optional automatic grading — either via author JavaScript or server-side answer matching
+* **Completion Tracking**: Emits completion events when learners submit an interaction
+* **Feedback Display**: Configurable correct/incorrect feedback with custom messages
+* **Previous Response**: Optionally shows learners their previous response on return
+* **Test Grading**: Studio includes a "Test Grading" panel to verify grading config before publishing
+* **Debug Mode**: Staff-only debug panel showing block state
+* **Masquerade Support**: Staff can view individual student state via Open edX's "View as Specific Learner"
+
+Requirements
+------------
+
+* Python 3.11+
+* Django 4.2 or 5.2
+* Open edX (Redwood or later)
 
 Installation
------------
+------------
 
 System Administrator
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
-To install the XBlock on your platform, add the following to your ``requirements.txt`` file:
+Add to your ``OPENEDX_EXTRA_PIP_REQUIREMENTS``:
 
-    interactive-html-xblock
+.. code-block::
 
-You'll also need to add this to your ``INSTALLED_APPS``:
-
-    interactive_html_xblock
+    git+https://github.com/blend-ed/interactive-content-xblock.git@main
 
 Course Staff
 ~~~~~~~~~~~~
 
-To install the XBlock in your course, access your ``Advanced Module List``:
+Add ``interactive_content_xblock`` to your course's Advanced Module List:
 
-    Settings -> Advanced Settings -> Advanced Module List
-
-and add the following:
-
-    interactive_js_block
+    Settings → Advanced Settings → Advanced Module List
 
 Usage
 -----
 
 Studio View (Authoring)
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
-1. Add the InteractiveJSBlock to your course
-2. Click "Edit" to open the studio editor
-3. Use the tabbed interface to define:
-   - **HTML Content**: The structure and content of your interactive element
-   - **CSS Styles**: Styling for your content (scoped to the block)
-   - **JavaScript**: Interactive functionality
-   - **Settings**: Configuration options
+1. Add the InteractiveContentXBlock component to your course
+2. Click "Edit" to open the Studio editor
+3. Configure the following:
+
+   - **HTML Content**: The structure of your interactive element
+   - **CSS Styles**: Styling for your content
+   - **JavaScript Code**: Interactivity logic using ``submitInteraction(data)``
+   - **Grading Configuration**: Answer matching mode, correct answer(s), and feedback messages
 
 4. Use the ``submitInteraction(data)`` function in your JavaScript to capture learner interactions:
 
@@ -62,113 +76,155 @@ Studio View (Authoring)
        function submitAnswer(answer) {
          submitInteraction({
            answer: answer,
-           question: "What is 2 + 2?",
-           correct: answer === "4",
-           timeSpent: Date.now() - startTime
+           correct: answer === "Paris",
+           timeSpent: Math.round((Date.now() - startTime) / 1000)
          });
        }
 
-LMS View (Learner Interaction)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+5. Use the **Test Grading** panel in Studio to verify your grading config works before publishing.
 
-Learners will see the rendered HTML content with the author's CSS and JavaScript applied. The XBlock automatically provides the ``submitInteraction()`` function for capturing interactions.
+LMS View (Learner)
+~~~~~~~~~~~~~~~~~~
+
+Learners see the rendered HTML content with the author's CSS and JavaScript applied. The XBlock automatically provides the ``submitInteraction()`` function for capturing interactions.
 
 Configuration Options
--------------------
+---------------------
 
 * **Display Name**: The title shown to learners
-* **Weight**: Points value for grading purposes
-* **Enable Debug Mode**: Show debug information and console logs
-* **Enable Auto-Grading**: Automatically grade based on interaction data
-* **Allowed External URLs**: Optional list of allowed external CSS/JS URLs
+* **Weight**: Points value for grading
+* **Enable Debug Mode**: Show debug panel (staff only)
+* **Auto Grade Enabled**: Enable automatic grading
+* **Show Feedback to Learners**: Show correct/incorrect feedback after submission
+* **Show Previous Response**: Show learners their previous response on return
+* **Grading Configuration**: Answer matching mode (None / Single Answer / Multiple Fields), correct answer value(s), and feedback messages
 
 Auto-Grading
 ------------
 
-When auto-grading is enabled, the XBlock will automatically assign scores based on interaction data containing:
+There are two ways to grade interactions:
 
-* ``score``: Direct score value
-* ``grade``: Grade value (0-1)
-* ``correct``: Boolean indicating correctness
+**1. Author JavaScript provides correctness directly (recommended for most cases):**
 
-Example:
+Include a ``correct`` boolean in the data passed to ``submitInteraction()``:
 
 .. code-block:: javascript
 
     submitInteraction({
-      answer: "B",
+      answer: "Paris",
       correct: true,
       timeSpent: 45
     });
 
+The XBlock uses this directly — no server-side config needed. If you've set feedback messages in Grading Configuration, they'll be shown automatically.
+
+**2. Server-side answer matching:**
+
+Set "Auto Grade Enabled" to True and configure the Grading Configuration in Studio:
+
+- **Single Answer**: Set the correct answer value. The server compares case-insensitively.
+- **Multiple Fields**: Add field name / expected value pairs. Partial credit is awarded proportionally.
+
+Configure feedback messages (Correct Feedback / Incorrect Feedback) to show custom responses.
+
+Staff Data Access
+-----------------
+
+Staff can view individual student state using the platform's built-in **masquerade** feature ("View as Specific Learner"). This works because the XBlock sets ``show_in_read_only_mode = True``. Bulk data exports are available through the Open edX instructor dashboard.
+
 Development
 -----------
 
-To run the XBlock in development mode:
+Setup
+~~~~~
 
 .. code-block:: bash
 
-    cd interactive-html-xblock
-    make requirements
-    make test
+    pip install -e .                     # development install
+    make requirements                    # full dev environment
 
-Workbench Scenarios
-------------------
+Testing
+~~~~~~~
 
-The XBlock includes several workbench scenarios for testing:
+.. code-block:: bash
 
-* Basic InteractiveJSBlock
-* Multiple InteractiveJSBlock instances
-* InteractiveJSBlock with custom quiz content
+    tox -e py312-django52                # Django 5.2
+    tox -e py312-django42                # Django 4.2
+    pytest tests/test_interactive_content_xblock.py  # specific file
+    pytest tests/test_interactive_content_xblock.py::TestInteractiveContentXBlock::test_method_name  # single test
 
-Example Quiz Implementation
---------------------------
+Quality
+~~~~~~~
+
+.. code-block:: bash
+
+    tox -e quality                       # pylint, pycodestyle, pydocstyle, isort
+
+Development with Tutor
+~~~~~~~~~~~~~~~~~~~~~~
+
+1. Install in development mode:
+
+   .. code-block:: bash
+
+       cd interactive-content-xblock
+       pip install -e .
+
+2. Add to Tutor mounts:
+
+   .. code-block:: bash
+
+       tutor mounts add /path/to/interactive-content-xblock
+
+3. Create a Tutor plugin (``touch $(tutor plugins printroot)/mount_interactive_content_xblock.py``):
+
+   .. code-block:: python
+
+       from tutor import hooks
+       hooks.Filters.MOUNTED_DIRECTORIES.add_item(("openedx", "interactive_content_xblock"))
+
+4. Enable and build:
+
+   .. code-block:: bash
+
+       tutor plugins enable mount_interactive_content_xblock
+       tutor images build openedx-dev
+       tutor dev start -d
+
+Example
+-------
+
+This is the default content when you add a new block:
 
 .. code-block:: html
 
-    <div class="quiz-container">
-      <h2>Interactive Quiz</h2>
-      <div class="question">
-        <p>What is 2 + 2?</p>
-        <button onclick="submitAnswer('4')">4</button>
-        <button onclick="submitAnswer('5')">5</button>
+    <div class="quiz">
+      <h3>Sample Quiz</h3>
+      <p>What is the capital of France?</p>
+      <div class="options">
+        <button onclick="submitAnswer('Paris')">Paris</button>
+        <button onclick="submitAnswer('London')">London</button>
+        <button onclick="submitAnswer('Berlin')">Berlin</button>
       </div>
     </div>
 
-.. code-block:: css
-
-    .quiz-container {
-      padding: 20px;
-      border: 2px solid #007bff;
-      border-radius: 8px;
-      background: #f8f9fa;
-    }
-    .question button {
-      margin: 5px;
-      padding: 10px 20px;
-      border: 1px solid #007bff;
-      border-radius: 4px;
-      background: white;
-      cursor: pointer;
-    }
-    .question button:hover {
-      background: #007bff;
-      color: white;
-    }
-
 .. code-block:: javascript
+
+    var startTime = Date.now();
 
     function submitAnswer(answer) {
       submitInteraction({
         answer: answer,
-        question: "What is 2 + 2?",
-        correct: answer === "4",
-        timeSpent: Date.now() - startTime
+        correct: answer === "Paris",
+        timeSpent: Math.round((Date.now() - startTime) / 1000)
       });
     }
-    var startTime = Date.now();
 
 License
 -------
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+Copyright © 2026 Blend-ed.
+
+Interactive Content XBlock is free software: you can redistribute it and/or modify it under the terms of the `GNU Affero General Public License <LICENSE>`_ as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. See the ``LICENSE`` file in this repository for the full license text.
+
+Maintainer: zameel7.

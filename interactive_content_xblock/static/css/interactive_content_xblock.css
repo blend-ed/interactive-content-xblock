@@ -1,0 +1,135 @@
+/* InteractiveContentXBlock Styles */
+
+.interactive-content-xblock {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Debug Panel */
+.debug-panel {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 20px;
+    font-size: 0.9em;
+}
+
+.debug-panel h4 {
+    margin: 0 0 10px 0;
+    color: #495057;
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.debug-info p {
+    margin: 5px 0;
+    color: #6c757d;
+}
+
+.debug-info strong {
+    color: #495057;
+}
+
+/* Previous Response Display */
+.previous-response {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.previous-response h4 {
+    margin: 0 0 10px 0;
+    color: #495057;
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.response-data pre {
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 10px;
+    font-size: 0.85em;
+    overflow-x: auto;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* Feedback Display */
+.feedback-display {
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 15px;
+    margin-top: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.feedback-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.feedback-status.correct {
+    color: #28a745;
+}
+
+.feedback-status.incorrect {
+    color: #dc3545;
+}
+
+.status-icon {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.score-display {
+    margin-bottom: 10px;
+}
+
+.score-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.score-value {
+    color: #007bff;
+    font-weight: 600;
+}
+
+.feedback-message {
+    margin-top: 10px;
+}
+
+.message-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.message-text {
+    color: #6c757d;
+    margin-left: 5px;
+}
+
+/* Interactive Content */
+.interactive-content {
+    margin-top: 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .interactive-content-xblock {
+        padding: 15px;
+    }
+}
