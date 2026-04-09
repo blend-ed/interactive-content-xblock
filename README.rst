@@ -4,7 +4,7 @@ Interactive Content XBlock
 |license| |status|
 
 .. |license| image:: https://img.shields.io/badge/license-AGPL--3.0-blue.svg
-   :target: https://github.com/blend-ed/interactive-content-xblock/blob/main/LICENSE
+   :target: https://github.com/blend-ed/interactive-content-xblock/blob/master/LICENSE
 .. |status| image:: https://img.shields.io/badge/status-alpha-orange.svg
 
 .. image:: walkthrough/interactive-content-xblock-workflow.gif
